@@ -1,0 +1,311 @@
+/* 登入頁面樣式 */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+    background: var(--background-white);
+    border-radius: var(--border-radius-large);
+    box-shadow: 0 20px 60px var(--shadow-dark);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.login-header i {
+    font-size: 3rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.login-header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.login-header p {
+    opacity: 0.9;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.tabs {
+    display: flex;
+    background: var(--background-light);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+    background: rgba(26, 35, 126, 0.1);
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    background: var(--background-white);
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.auth-form {
+    padding: 2rem;
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.form-group i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    z-index: 1;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+    background: var(--background-white);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+}
+
+.form-group input:focus + i {
+    color: var(--primary-color);
+}
+
+/* 許可證驗證 */
+.form-group:has(.validate-btn) {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.form-group:has(.validate-btn) input {
+    flex: 1;
+    margin: 0;
+}
+
+.validate-btn {
+    padding: 1rem;
+    border: 2px solid var(--border-light);
+    background: var(--background-white);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+    min-width: 50px;
+}
+
+.validate-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.validate-btn.validating {
+    color: var(--warning-color);
+}
+
+.validate-btn.valid {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.validate-btn.invalid {
+    background: var(--error-color);
+    border-color: var(--error-color);
+    color: white;
+}
+
+.license-status {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    min-height: 1.2rem;
+}
+
+.license-status.valid {
+    color: var(--success-color);
+}
+
+.license-status.invalid {
+    color: var(--error-color);
+}
+
+.license-status.validating {
+    color: var(--warning-color);
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: var(--border-radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--shadow-medium);
+}
+
+.auth-btn:active {
+    transform: translateY(0);
+}
+
+.auth-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.login-footer {
+    background: var(--background-light);
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.login-footer i {
+    color: var(--success-color);
+    margin-right: 0.5rem;
+}
+
+/* 錯誤和成功狀態 */
+.form-group.error input {
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.form-group.error i {
+    color: var(--error-color);
+}
+
+.form-group.success input {
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.form-group.success i {
+    color: var(--success-color);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.success-message {
+    color: var(--success-color);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* 響應式設計 */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 1rem;
+    }
+    
+    .login-card {
+        max-width: none;
+        width: 100%;
+    }
+    
+    .login-header {
+        padding: 1.5rem;
+    }
+    
+    .login-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .auth-form {
+        padding: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group input {
+        padding: 0.875rem 0.875rem 0.875rem 2.5rem;
+    }
+}

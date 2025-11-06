@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登出測試頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover { background: #0056b3; }
+        .info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .log { background: #f8f9fa; padding: 10px; font-family: monospace; font-size: 12px; border-radius: 5px; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>登出功能測試</h1>
+    
+    <div class="test-box">
+        <h3>當前狀態</h3>
+        <div class="info">
+            <div>登入狀態: <span id="authStatus">檢查中...</span></div>
+            <div>用戶資訊: <span id="userInfo">檢查中...</span></div>
+            <div>Token: <span id="tokenInfo">檢查中...</span></div>
+        </div>
+        <button onclick="checkStatus()">重新檢查狀態</button>
+    </div>
+
+    <div class="test-box">
+        <h3>登出測試</h3>
+        <button onclick="testLogout1()">方法1: 調用 auth.logout()</button>
+        <button onclick="testLogout2()">方法2: 調用全域 logout()</button>
+        <button onclick="testLogout3()">方法3: 手動清除</button>
+        <button onclick="forceLogout()">強制登出</button>
+    </div>
+
+    <div class="test-box">
+        <h3>導航測試</h3>
+        <button onclick="goToLogin()">前往登入頁面</button>
+        <button onclick="goToHome()">前往首頁</button>
+        <button onclick="goToAdmin()">前往管理頁面</button>
+    </div>
+
+    <div class="test-box">
+        <h3>調試日誌</h3>
+        <div id="debugLog" class="log">等待操作...</div>
+        <button onclick="clearLog()">清除日誌</button>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('debugLog');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${time}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function checkStatus() {
+            log('=== 檢查當前狀態 ===');
+            
+            const isAuth = auth.isAuthenticated();
+            const user = auth.getUser();
+            const token = localStorage.getItem('token');
+            
+            document.getElementById('authStatus').textContent = isAuth ? '已登入' : '未登入';
+            document.getElementById('userInfo').textContent = user ? JSON.stringify(user) : '無';
+            document.getElementById('tokenInfo').textContent = token ? `${token.substring(0, 20)}...` : '無';
+            
+            log(`登入狀態: ${isAuth}`);
+            log(`用戶: ${user ? user.username : '無'}`);
+            log(`Token: ${token ? '存在' : '不存在'}`);
+            log(`LocalStorage keys: ${Object.keys(localStorage).join(', ')}`);
+        }
+
+        function testLogout1() {
+            log('=== 測試方法1: auth.logout() ===');
+            try {
+                auth.logout();
+                log('auth.logout() 執行完成');
+            } catch (error) {
+                log(`錯誤: ${error.message}`);
+            }
+            setTimeout(checkStatus, 500);
+        }
+
+        function testLogout2() {
+            log('=== 測試方法2: 全域 logout() ===');
+            try {
+                logout();
+                log('全域 logout() 執行完成');
+            } catch (error) {
+                log(`錯誤: ${error.message}`);
+            }
+            setTimeout(checkStatus, 500);
+        }
+
+        function testLogout3() {
+            log('=== 測試方法3: 手動清除 ===');
+            localStorage.clear();
+            sessionStorage.clear();
+            auth.user = null;
+            api.token = null;
+            log('手動清除完成');
+            checkStatus();
+        }
+
+        function forceLogout() {
+            log('=== 強制登出 ===');
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/login';
+        }
+
+        function goToLogin() { window.location.href = '/login'; }
+        function goToHome() { window.location.href = '/'; }
+        function goToAdmin() { window.location.href = '/admin'; }
+
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '日誌已清除<br>';
+        }
+
+        // 頁面載入時檢查狀態
+        document.addEventListener('DOMContentLoaded', function() {
+            log('測試頁面載入完成');
+            checkStatus();
+        });
+    </script>
+</body>
+</html>

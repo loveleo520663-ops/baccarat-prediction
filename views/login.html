@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百家樂預測系統 - 登入</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/login.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-crown"></i>
+                <h1>百家樂預測系統</h1>
+                <p>專業預測，精準分析</p>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">登入</button>
+                <button class="tab-btn" onclick="switchTab('register')">註冊</button>
+            </div>
+
+            <!-- 登入表單 -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="loginUsername" placeholder="用戶名" required>
+                </div>
+                
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" placeholder="密碼" required>
+                </div>
+
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    登入
+                </button>
+            </form>
+
+            <!-- 註冊表單 -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="registerUsername" placeholder="用戶名" required>
+                </div>
+                
+                <div class="form-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="registerEmail" placeholder="電子郵件（選填）">
+                </div>
+                
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="registerPassword" placeholder="密碼（至少6位）" required>
+                </div>
+
+                <div class="form-group">
+                    <i class="fas fa-key"></i>
+                    <input type="text" id="licenseKey" placeholder="許可證金鑰" required>
+                    <button type="button" class="validate-btn" onclick="validateLicense()">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
+                <div id="licenseStatus" class="license-status"></div>
+
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-user-plus"></i>
+                    註冊
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p><i class="fas fa-shield-alt"></i> 安全加密連接</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入動畫 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>處理中...</p>
+        </div>
+    </div>
+
+    <!-- 訊息提示 -->
+    <div id="messageBox" class="message-box">
+        <div class="message-content">
+            <i id="messageIcon" class="fas fa-info-circle"></i>
+            <span id="messageText"></span>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/login.js"></script>
+</body>
+</html>

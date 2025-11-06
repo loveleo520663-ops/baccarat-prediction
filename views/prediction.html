@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百家樂預測系統 - 預測分析</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/prediction.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-crown"></i>
+            <span>百家樂預測系統</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="/dashboard" class="nav-link">
+                <i class="fas fa-home"></i>
+                主控台
+            </a>
+            <a href="/prediction" class="nav-link active">
+                <i class="fas fa-chart-line"></i>
+                預測分析
+            </a>
+        </div>
+
+        <div class="nav-user">
+            <div class="user-info">
+                <span id="username"></span>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="prediction-container">
+        <div class="prediction-header">
+            <h1><i class="fas fa-magic"></i> 百家樂預測分析</h1>
+            <p>選擇5張牌的顏色，系統將為您提供專業的預測分析</p>
+        </div>
+
+        <div class="prediction-workspace">
+            <!-- 牌色選擇器 -->
+            <div class="card-selector-section">
+                <h2><i class="fas fa-cards-blank"></i> 牌色選擇器</h2>
+                <p>請依序選擇5張牌的顏色：</p>
+                
+                <div class="card-selection">
+                    <div class="card-slots">
+                        <div class="card-slot" data-index="0">
+                            <div class="card-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>第1張</span>
+                            </div>
+                        </div>
+                        <div class="card-slot" data-index="1">
+                            <div class="card-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>第2張</span>
+                            </div>
+                        </div>
+                        <div class="card-slot" data-index="2">
+                            <div class="card-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>第3張</span>
+                            </div>
+                        </div>
+                        <div class="card-slot" data-index="3">
+                            <div class="card-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>第4張</span>
+                            </div>
+                        </div>
+                        <div class="card-slot" data-index="4">
+                            <div class="card-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>第5張</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="color-picker">
+                        <button class="color-btn red" data-color="red">
+                            <i class="fas fa-heart"></i>
+                            紅牌
+                        </button>
+                        <button class="color-btn black" data-color="black">
+                            <i class="fas fa-spade"></i>
+                            黑牌
+                        </button>
+                    </div>
+
+                    <div class="selection-actions">
+                        <button class="action-btn secondary" onclick="clearSelection()">
+                            <i class="fas fa-trash"></i>
+                            清除
+                        </button>
+                        <button class="action-btn primary" onclick="generatePrediction()">
+                            <i class="fas fa-magic"></i>
+                            生成預測
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 預測結果 -->
+            <div class="prediction-result-section" id="predictionResult" style="display: none;">
+                <h2><i class="fas fa-chart-line"></i> 預測結果</h2>
+                
+                <div class="result-card">
+                    <div class="result-main">
+                        <div class="predicted-outcome">
+                            <h3>預測結果</h3>
+                            <div class="outcome-display" id="outcomeDisplay">
+                                <i class="fas fa-crown"></i>
+                                <span>莊家</span>
+                            </div>
+                        </div>
+
+                        <div class="confidence-meter">
+                            <h4>信心度</h4>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill"></div>
+                            </div>
+                            <span class="confidence-value" id="confidenceValue">85%</span>
+                        </div>
+                    </div>
+
+                    <div class="probability-breakdown">
+                        <h4>機率分析</h4>
+                        <div class="probability-bars">
+                            <div class="prob-item">
+                                <span class="prob-label">莊家</span>
+                                <div class="prob-bar">
+                                    <div class="prob-fill banker" id="bankerProb"></div>
+                                </div>
+                                <span class="prob-value" id="bankerValue">45%</span>
+                            </div>
+                            <div class="prob-item">
+                                <span class="prob-label">閒家</span>
+                                <div class="prob-bar">
+                                    <div class="prob-fill player" id="playerProb"></div>
+                                </div>
+                                <span class="prob-value" id="playerValue">44%</span>
+                            </div>
+                            <div class="prob-item">
+                                <span class="prob-label">和局</span>
+                                <div class="prob-bar">
+                                    <div class="prob-fill tie" id="tieProb"></div>
+                                </div>
+                                <span class="prob-value" id="tieValue">11%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-factors">
+                        <h4>分析因素</h4>
+                        <div class="factors-list" id="factorsList">
+                            <!-- 分析因素將動態載入 -->
+                        </div>
+                    </div>
+
+                    <div class="result-actions">
+                        <button class="action-btn success" onclick="confirmResult('banker')">
+                            <i class="fas fa-crown"></i>
+                            莊家
+                        </button>
+                        <button class="action-btn info" onclick="confirmResult('player')">
+                            <i class="fas fa-user"></i>
+                            閒家
+                        </button>
+                        <button class="action-btn warning" onclick="confirmResult('tie')">
+                            <i class="fas fa-handshake"></i>
+                            和局
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 歷史記錄容器 -->
+            <div class="history-container">
+                <h2><i class="fas fa-history"></i> 預測歷史</h2>
+                <div class="history-grid" id="historyGrid">
+                    <!-- 歷史記錄將動態載入 -->
+                </div>
+                
+                <div class="pagination" id="pagination">
+                    <!-- 分頁控制將動態載入 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 結果確認彈窗 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> 確認實際結果</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>請確認實際的遊戲結果：</p>
+                <div class="result-selection" id="resultSelection">
+                    <!-- 結果選項將動態載入 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn secondary" onclick="closeConfirmModal()">取消</button>
+                <button class="action-btn primary" onclick="submitResult()">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入動畫 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>生成預測中...</p>
+        </div>
+    </div>
+
+    <!-- 訊息提示 -->
+    <div id="messageBox" class="message-box">
+        <div class="message-content">
+            <i id="messageIcon" class="fas fa-info-circle"></i>
+            <span id="messageText"></span>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/prediction.js"></script>
+</body>
+</html>

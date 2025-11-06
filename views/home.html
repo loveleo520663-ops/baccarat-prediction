@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百家樂預測系統</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .home-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .home-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .home-header {
+            margin-bottom: 30px;
+        }
+
+        .home-header i {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .home-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .home-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .user-status {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .navigation-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .nav-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .guest-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <div class="home-card">
+            <div class="home-header">
+                <i class="fas fa-crown"></i>
+                <h1>百家樂預測系統</h1>
+                <p>專業預測，精準分析</p>
+            </div>
+
+            <div id="userSection" class="user-status" style="display: none;">
+                <h3>歡迎回來！</h3>
+                <div class="status-item">
+                    <span>用戶：</span>
+                    <strong id="currentUsername">-</strong>
+                </div>
+                <div class="status-item">
+                    <span>角色：</span>
+                    <strong id="currentRole">-</strong>
+                </div>
+                <div class="status-item">
+                    <span>狀態：</span>
+                    <span style="color: #28a745;">已登入</span>
+                </div>
+
+                <div class="navigation-buttons">
+                    <a href="/game" class="nav-btn primary">
+                        <i class="fas fa-gamepad"></i>
+                        開始遊戲
+                    </a>
+                    <a href="/prediction" class="nav-btn secondary">
+                        <i class="fas fa-chart-line"></i>
+                        舊版預測
+                    </a>
+                    <a id="adminBtn" href="/admin" class="nav-btn primary" style="display: none;">
+                        <i class="fas fa-cog"></i>
+                        管理後台
+                    </a>
+                    <button class="nav-btn secondary" onclick="debugLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        登出
+                    </button>
+                </div>
+            </div>
+
+            <div id="guestSection" class="guest-actions">
+                <a href="/login" class="nav-btn primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    登入系統
+                </a>
+                <a href="/login" class="nav-btn secondary" onclick="switchTab('register')">
+                    <i class="fas fa-user-plus"></i>
+                    註冊帳號
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Home page loaded');
+            console.log('Auth status:', auth.isAuthenticated());
+            
+            if (auth.isAuthenticated()) {
+                const user = auth.getUser();
+                console.log('User:', user);
+                
+                document.getElementById('userSection').style.display = 'block';
+                document.getElementById('guestSection').style.display = 'none';
+                
+                document.getElementById('currentUsername').textContent = user.username;
+                document.getElementById('currentRole').textContent = user.role === 'admin' ? '管理員' : '一般用戶';
+                
+                if (user.role === 'admin') {
+                    document.getElementById('adminBtn').style.display = 'block';
+                }
+            } else {
+                document.getElementById('userSection').style.display = 'none';
+                document.getElementById('guestSection').style.display = 'grid';
+            }
+        });
+
+        function switchTab(tab) {
+            localStorage.setItem('preferredTab', tab);
+        }
+
+        // 添加調試用的登出函數
+        function debugLogout() {
+            console.log('Debug logout called');
+            logout();
+        }
+    </script>
+</body>
+</html>

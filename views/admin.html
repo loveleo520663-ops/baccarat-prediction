@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百家樂預測系統 - 管理員後台</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-crown"></i>
+            <span>百家樂預測系統 - 管理後台</span>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-info">
+                <i class="fas fa-user-shield"></i>
+                <span id="username">管理員</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <div class="sidebar-menu">
+                <a href="#dashboard" class="menu-item active" onclick="showSection('dashboard')">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>系統概覽</span>
+                </a>
+                <a href="#users" class="menu-item" onclick="showSection('users')">
+                    <i class="fas fa-users"></i>
+                    <span>用戶管理</span>
+                </a>
+                <a href="#licenses" class="menu-item" onclick="showSection('licenses')">
+                    <i class="fas fa-key"></i>
+                    <span>許可證管理</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- 系統概覽 -->
+            <div id="dashboard" class="admin-section active">
+                <div class="section-header">
+                    <h1><i class="fas fa-chart-pie"></i> 系統概覽</h1>
+                    <p>系統運行狀態和統計數據</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalUsers">-</h3>
+                            <p>總用戶數</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="activeUsers">-</h3>
+                            <p>活躍用戶</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalLicenseKeys">-</h3>
+                            <p>許可證總數</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalPredictions">-</h3>
+                            <p>預測總次數</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accuracy-display">
+                    <h3>系統準確率</h3>
+                    <div class="accuracy-meter">
+                        <div class="accuracy-circle">
+                            <div class="accuracy-value" id="accuracyValue">-</div>
+                            <div class="accuracy-label">準確率</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用戶管理 -->
+            <div id="users" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-users"></i> 用戶管理</h1>
+                    <p>管理系統用戶和許可證</p>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-actions">
+                            <button class="action-btn primary" onclick="refreshUsers()">
+                                <i class="fas fa-sync"></i>
+                                刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用戶名</th>
+                                <th>電子郵件</th>
+                                <th>許可證</th>
+                                <th>到期時間</th>
+                                <th>最後登入</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="8" class="loading-row">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    載入中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 許可證管理 -->
+            <div id="licenses" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-key"></i> 許可證管理</h1>
+                    <p>生成和管理許可證金鑰</p>
+                </div>
+
+                <div class="license-generator">
+                    <h3>生成新許可證</h3>
+                    <div class="generator-form">
+                        <div class="form-group">
+                            <label>數量：</label>
+                            <input type="number" id="keyCount" min="1" max="100" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>有效期（天）：</label>
+                            <input type="number" id="keyDuration" min="1" max="365" value="30">
+                        </div>
+                        <button class="action-btn primary" onclick="generateLicenses()">
+                            <i class="fas fa-plus"></i>
+                            生成許可證
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-actions">
+                            <button class="action-btn primary" onclick="refreshLicenses()">
+                                <i class="fas fa-sync"></i>
+                                刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>金鑰</th>
+                                <th>有效期</th>
+                                <th>使用狀態</th>
+                                <th>使用者</th>
+                                <th>創建時間</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="licensesTableBody">
+                            <tr>
+                                <td colspan="6" class="loading-row">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    載入中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="pagination" id="licensesPagination">
+                        <!-- 分頁控制將動態載入 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 延長許可證彈窗 -->
+    <div id="extendModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-clock"></i> 延長許可證</h3>
+                <button class="modal-close" onclick="closeExtendModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>用戶：<span id="extendUsername"></span></p>
+                <p>當前到期時間：<span id="currentExpiry"></span></p>
+                <div class="form-group">
+                    <label>延長天數：</label>
+                    <input type="number" id="extendDays" min="1" max="365" value="30">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn secondary" onclick="closeExtendModal()">取消</button>
+                <button class="action-btn primary" onclick="submitExtend()">確認延長</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生成成功彈窗 -->
+    <div id="generatedKeysModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> 許可證生成成功</h3>
+                <button class="modal-close" onclick="closeGeneratedKeysModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="generated-keys-list" id="generatedKeysList">
+                    <!-- 生成的金鑰列表將動態載入 -->
+                </div>
+                <div class="modal-actions">
+                    <button class="action-btn secondary" onclick="copyAllKeys()">
+                        <i class="fas fa-copy"></i>
+                        複製全部
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入動畫 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>處理中...</p>
+        </div>
+    </div>
+
+    <!-- 訊息提示 -->
+    <div id="messageBox" class="message-box">
+        <div class="message-content">
+            <i id="messageIcon" class="fas fa-info-circle"></i>
+            <span id="messageText"></span>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

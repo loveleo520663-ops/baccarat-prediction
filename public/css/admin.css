@@ -1,0 +1,480 @@
+/* 管理員頁面樣式 */
+.admin-container {
+    display: flex;
+    min-height: calc(100vh - 80px);
+    background: var(--background-light);
+}
+
+.admin-sidebar {
+    width: 280px;
+    background: var(--background-white);
+    box-shadow: 2px 0 10px var(--shadow-light);
+    padding: 2rem 0;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1rem;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    text-decoration: none;
+    color: var(--text-secondary);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.menu-item:hover {
+    background: var(--background-light);
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+.menu-item.active {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.menu-item i {
+    font-size: 1.2rem;
+    width: 20px;
+    text-align: center;
+}
+
+.admin-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.admin-section {
+    display: none;
+}
+
+.admin-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-header h1 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-header p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+/* 準確率顯示 */
+.accuracy-display {
+    background: var(--background-white);
+    border-radius: var(--border-radius-large);
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px var(--shadow-light);
+}
+
+.accuracy-display h3 {
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+}
+
+.accuracy-meter {
+    display: flex;
+    justify-content: center;
+}
+
+.accuracy-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: conic-gradient(var(--success-color) 0deg, var(--success-color) calc(var(--accuracy, 0) * 3.6deg), var(--border-light) calc(var(--accuracy, 0) * 3.6deg), var(--border-light) 360deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.accuracy-circle::before {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: var(--background-white);
+    border-radius: 50%;
+}
+
+.accuracy-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--success-color);
+    z-index: 1;
+}
+
+.accuracy-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    z-index: 1;
+}
+
+/* 表格樣式 */
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--background-light);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.table-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.data-table th {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    font-size: 0.9rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: var(--success-light);
+    color: white;
+}
+
+.status-badge.inactive {
+    background: var(--error-light);
+    color: white;
+}
+
+.status-badge.used {
+    background: var(--warning-light);
+    color: white;
+}
+
+.status-badge.unused {
+    background: var(--info-light);
+    color: white;
+}
+
+.action-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.action-menu-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.action-menu-btn:hover {
+    background: var(--background-light);
+    color: var(--primary-color);
+}
+
+.action-menu-items {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--background-white);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 32px var(--shadow-medium);
+    z-index: 1000;
+    min-width: 150px;
+    display: none;
+}
+
+.action-menu.show .action-menu-items {
+    display: block;
+    animation: fadeInDown 0.2s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.action-menu-item {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    text-align: left;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.action-menu-item:hover {
+    background: var(--background-light);
+    color: var(--primary-color);
+}
+
+.action-menu-item:first-child {
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.action-menu-item:last-child {
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+.action-menu-item.danger:hover {
+    background: var(--error-light);
+    color: white;
+}
+
+/* 許可證生成器 */
+.license-generator {
+    background: var(--background-white);
+    border-radius: var(--border-radius-large);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px var(--shadow-light);
+}
+
+.license-generator h3 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.generator-form {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.generator-form .form-group {
+    margin-bottom: 0;
+    min-width: 120px;
+}
+
+.generator-form .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.generator-form .form-group input {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* 生成的金鑰列表 */
+.generated-keys-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.generated-key-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    margin-bottom: 0.5rem;
+    background: var(--background-light);
+}
+
+.key-code {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: var(--primary-color);
+    background: var(--background-white);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+}
+
+.key-duration {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.copy-key-btn {
+    background: none;
+    border: none;
+    color: var(--info-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.copy-key-btn:hover {
+    background: var(--info-light);
+    color: white;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+    .admin-container {
+        flex-direction: column;
+    }
+    
+    .admin-sidebar {
+        width: 100%;
+        padding: 1rem 0;
+    }
+    
+    .sidebar-menu {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0;
+    }
+    
+    .menu-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .admin-content {
+        padding: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-menu {
+        padding: 0 0.5rem;
+    }
+    
+    .menu-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .menu-item span {
+        display: none;
+    }
+    
+    .section-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .generator-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .generator-form .form-group {
+        min-width: auto;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .data-table {
+        font-size: 0.8rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.5rem;
+    }
+    
+    .generated-key-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .accuracy-circle {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .accuracy-circle::before {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .accuracy-value {
+        font-size: 1.5rem;
+    }
+    
+    .modal-content {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百家樂預測系統 - 主控台</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-crown"></i>
+            <span>百家樂預測系統</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="/dashboard" class="nav-link active">
+                <i class="fas fa-home"></i>
+                主控台
+            </a>
+            <a href="/prediction" class="nav-link">
+                <i class="fas fa-chart-line"></i>
+                預測分析
+            </a>
+        </div>
+
+        <div class="nav-user">
+            <div class="user-info">
+                <span id="username"></span>
+                <div class="license-info">
+                    <i class="fas fa-clock"></i>
+                    <span id="licenseExpiry"></span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>歡迎回來！</h1>
+            <p>您的專業百家樂預測助手</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalPredictions">-</h3>
+                    <p>總預測次數</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="overallAccuracy">-</h3>
+                    <p>整體準確率</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="recentAccuracy">-</h3>
+                    <p>近7天準確率</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon info">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="correctPredictions">-</h3>
+                    <p>正確預測</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i> 最近預測記錄</h2>
+                    <a href="/prediction" class="view-all-btn">
+                        查看全部 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="predictions-list">
+                    <div id="recentPredictions" class="predictions-container">
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>載入中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-pie"></i> 預測分布</h2>
+                </div>
+                
+                <div class="prediction-breakdown">
+                    <div class="breakdown-item">
+                        <div class="breakdown-header">
+                            <span class="breakdown-label">莊家</span>
+                            <span class="breakdown-count" id="bankerCount">-</span>
+                        </div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-fill banker" id="bankerBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="breakdown-item">
+                        <div class="breakdown-header">
+                            <span class="breakdown-label">閒家</span>
+                            <span class="breakdown-count" id="playerCount">-</span>
+                        </div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-fill player" id="playerBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="breakdown-item">
+                        <div class="breakdown-header">
+                            <span class="breakdown-label">和局</span>
+                            <span class="breakdown-count" id="tieCount">-</span>
+                        </div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-fill tie" id="tieBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="/prediction" class="action-btn primary">
+                <i class="fas fa-magic"></i>
+                開始預測
+            </a>
+        </div>
+    </div>
+
+    <!-- 載入動畫 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>載入中...</p>
+        </div>
+    </div>
+
+    <!-- 訊息提示 -->
+    <div id="messageBox" class="message-box">
+        <div class="message-content">
+            <i id="messageIcon" class="fas fa-info-circle"></i>
+            <span id="messageText"></span>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

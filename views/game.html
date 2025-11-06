@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- 版本標記：v2.3 - 移除外部common.js依賴 -->
+    <title>百家樂預測系統 - 遊戲大廳</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d42 50%, #3a3a56 100%);
+            color: #E5E5E5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導航欄 */
+        .navbar {
+            background: rgba(30, 30, 46, 0.95);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 3px solid #6c7086;
+            box-shadow: 0 2px 10px rgba(108, 112, 134, 0.3);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-brand i {
+            color: #CCCCCC;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(204, 204, 204, 0.5);
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #CCCCCC;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #333333 0%, #555555 100%);
+            color: #FFFFFF;
+            border: 2px solid #666666;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #555555 0%, #777777 100%);
+            box-shadow: 0 0 15px rgba(102, 102, 102, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #2a2a2a 0%, #404040 100%);
+            color: #CCCCCC;
+            border: 2px solid #666666;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .admin-btn:hover {
+            background: linear-gradient(135deg, #404040 0%, #555555 100%);
+            box-shadow: 0 0 15px rgba(102, 102, 102, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .admin-btn.hidden {
+            display: none;
+        }
+
+        /* 主要遊戲區域 */
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* 左側區域 - 牌色選擇器 */
+        .card-selector {
+            background: linear-gradient(135deg, #45475a 0%, #585b70 100%);
+            border: 3px solid #6c7086;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(108, 112, 134, 0.3);
+        }
+
+        .selector-title {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #CCCCCC;
+            font-weight: normal;
+            text-shadow: 0 0 10px rgba(204, 204, 204, 0.5);
+        }
+
+        .cards-layout {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .player-side {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .player-label {
+            font-size: 1.2rem;
+            color: #CCCCCC;
+            font-weight: normal;
+            text-align: center;
+            text-shadow: 0 0 8px rgba(204, 204, 204, 0.5);
+        }
+
+        .triangle-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .bottom-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .card-slot {
+            width: 60px;
+            height: 85px;
+            border: 2px solid #9399b2;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #6c7086;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .card-slot.red {
+            background: #DC143C;
+            border-color: #FF6B6B;
+            box-shadow: 0 0 15px rgba(220, 20, 60, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .card-slot.black {
+            background: #1e1e2e;
+            border-color: #FFFFFF;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .card-slot:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(204, 204, 204, 0.6);
+            border-color: #CCCCCC;
+        }
+
+        .card-slot.red:hover {
+            box-shadow: 0 0 25px rgba(220, 20, 60, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.2);
+            border-color: #FF8E8E;
+        }
+
+        .card-slot.black:hover {
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
+            border-color: #FFFFFF;
+        }
+
+        /* 第三張牌旋轉效果 */
+        .card-slot[data-index="2"] {
+            transform: rotate(90deg);
+            transform-origin: center;
+        }
+
+        .card-slot[data-index="2"]:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .card-slot[data-index="2"].red {
+            transform: rotate(90deg) scale(1.05);
+        }
+
+        .card-slot[data-index="2"].red:hover {
+            transform: rotate(90deg) scale(1.15);
+        }
+
+        .card-slot[data-index="2"].black {
+            transform: rotate(90deg) scale(1.05);
+        }
+
+        .card-slot[data-index="2"].black:hover {
+            transform: rotate(90deg) scale(1.15);
+        }
+
+        /* 遊戲記錄區域 */
+        .game-record {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .record-header {
+            background: linear-gradient(135deg, #45475a 0%, #585b70 100%);
+            border: 3px solid #6c7086;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(108, 112, 134, 0.3);
+        }
+
+        .record-title {
+            font-size: 1.3rem;
+            color: #CCCCCC;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(204, 204, 204, 0.5);
+        }
+
+        .record-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            padding: 10px 15px;
+            border: 2px solid #666666;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            border-color: #DC143C;
+        }
+
+        .undo-btn {
+            background: linear-gradient(135deg, #444444 0%, #666666 100%);
+            color: #CCCCCC;
+            border-color: #666666;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(85, 85, 85, 0.4);
+        }
+
+        /* 遊戲記錄容器 */
+        .record-container {
+            background: linear-gradient(135deg, #45475a 0%, #585b70 100%);
+            border: 3px solid #6c7086;
+            border-radius: 15px;
+            padding: 15px;
+            min-height: 200px;
+            box-shadow: 0 0 20px rgba(108, 112, 134, 0.3);
+            position: relative;
+        }
+
+        .record-grid {
+            display: grid;
+            grid-template-rows: repeat(5, 1fr);
+            grid-template-columns: repeat(20, 1fr);
+            grid-auto-flow: column;
+            gap: 2px;
+            height: 180px;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background: #2a2a2a;
+            padding: 3px;
+            border-radius: 8px;
+            border: 2px solid #6c7086;
+            box-sizing: border-box;
+        }
+
+        .record-item {
+            background: #45475a;
+            border: 1px solid #6c7086;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+            aspect-ratio: 1;
+            box-sizing: border-box;
+        }
+
+        .record-item.banker {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            border-color: #DC143C;
+        }
+
+        .record-item.player {
+            background: linear-gradient(135deg, #0047AB 0%, #1E90FF 100%);
+            color: white;
+            border-color: #1E90FF;
+        }
+
+        .record-item.tie {
+            background: linear-gradient(135deg, #006400 0%, #228B22 100%);
+            color: white;
+            border-color: #228B22;
+        }
+
+        .record-item.empty {
+            background: transparent;
+            border: 1px dashed #555;
+            color: transparent;
+        }
+
+        .record-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 8px rgba(204, 204, 204, 0.4);
+            z-index: 1;
+        }
+
+        .record-item.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 結果按鈕區域 */
+        .result-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-btn {
+            flex: 1;
+            padding: 20px;
+            border: 3px solid #555555;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-btn.banker {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            border-color: #DC143C;
+        }
+
+        .result-btn.player {
+            background: linear-gradient(135deg, #0047AB 0%, #1E90FF 100%);
+            color: white;
+            border-color: #1E90FF;
+        }
+
+        .result-btn.tie {
+            background: linear-gradient(135deg, #006400 0%, #228B22 100%);
+            color: white;
+            border-color: #228B22;
+        }
+
+        .result-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(85, 85, 85, 0.4);
+        }
+
+        .result-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 右側區域 - 分析和走勢 */
+        .analysis-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .prediction-section, .statistics-section, .trend-section {
+            background: linear-gradient(135deg, #45475a 0%, #585b70 100%);
+            border: 3px solid #6c7086;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(108, 112, 134, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: #CCCCCC;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(204, 204, 204, 0.5);
+        }
+
+        .prediction-result {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(85, 85, 85, 0.15) 0%, rgba(42, 42, 42, 0.05) 100%);
+            border: 2px solid rgba(85, 85, 85, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .prediction-text {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #CCCCCC;
+        }
+
+        .confidence {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: #AAAAAA;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(85, 85, 85, 0.15) 0%, rgba(26, 26, 26, 0.3) 100%);
+            border: 2px solid rgba(85, 85, 85, 0.3);
+            border-radius: 8px;
+            font-weight: bold;
+            color: #CCCCCC;
+        }
+
+        .trend-chart {
+            height: 150px;
+            background: linear-gradient(135deg, rgba(85, 85, 85, 0.15) 0%, rgba(26, 26, 26, 0.3) 100%);
+            border: 2px solid rgba(85, 85, 85, 0.3);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #CCCCCC;
+        }
+
+        /* 響應式設計 */
+        /* 平板版 (1024px以下) */
+        @media (max-width: 1024px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .record-container {
+                min-height: 160px;
+            }
+            
+            .record-grid {
+                height: 140px;
+            }
+            
+            .record-item {
+                font-size: 1.0rem;
+            }
+            
+            .card-area {
+                gap: 15px;
+            }
+            
+            .result-buttons {
+                gap: 12px;
+            }
+        }
+
+        /* 手機版 (768px以下) */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 10px;
+                gap: 12px;
+            }
+            
+            .record-container {
+                padding: 6px;
+                min-height: 160px; /* 增加容器高度 */
+            }
+            
+            .record-grid {
+                height: 130px; /* 增加網格高度 */
+                gap: 1px;
+                padding: 2px;
+                grid-template-columns: repeat(10, 1fr); /* 10列 */
+                grid-template-rows: repeat(5, 1fr); /* 確保5排 */
+                grid-auto-flow: column; /* 重要：按列填充 */
+                display: grid; /* 確保是grid佈局 */
+            }
+            
+            .record-item {
+                font-size: 0.7rem;
+                aspect-ratio: 1;
+                min-height: 20px; /* 確保最小高度 */
+            }
+            
+            .card-area {
+                gap: 10px;
+            }
+            
+            .card-slot {
+                min-height: 60px;
+                font-size: 0.8rem;
+            }
+            
+            .result-buttons {
+                gap: 8px;
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            
+            .result-btn {
+                padding: 12px;
+                font-size: 0.9rem;
+                flex: 1;
+            }
+        }
+
+        /* 小手機版 (480px以下) */
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 8px;
+                gap: 10px;
+            }
+            
+            .record-container {
+                padding: 4px;
+                min-height: 140px; /* 增加容器高度 */
+            }
+            
+            .record-grid {
+                height: 110px; /* 增加網格高度 */
+                gap: 0.5px;
+                padding: 1px;
+                grid-template-columns: repeat(8, 1fr); /* 8列 */
+                grid-template-rows: repeat(5, 1fr); /* 確保5排 */
+                grid-auto-flow: column; /* 重要：按列填充 */
+                display: grid; /* 確保是grid佈局 */
+            }
+            
+            .record-item {
+                font-size: 0.6rem;
+                min-height: 18px; /* 確保最小高度 */
+            }
+            
+            .card-slot {
+                min-height: 50px;
+                font-size: 0.7rem;
+            }
+            
+            .result-btn {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 動畫效果 */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(204, 204, 204, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(204, 204, 204, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(204, 204, 204, 0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* 額外的灰色漸變效果 */
+        .nav-brand span,
+        .selector-title,
+        .record-title,
+        .section-title {
+            background: linear-gradient(45deg, #CCCCCC, #FFFFFF, #CCCCCC);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部導航欄 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-crown"></i>
+            <span>百家樂預測系統</span>
+            <small style="font-size: 0.6rem; color: #888; margin-left: 8px;">v2.3</small>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-info">
+                <i class="fas fa-user"></i>
+                <span id="username">管理員</span>
+            </div>
+            <button id="adminBtn" class="admin-btn hidden">
+                <i class="fas fa-cog"></i> 後台管理
+            </button>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主要遊戲區域 -->
+    <div class="game-container">
+        <!-- 左側：牌色選擇器 -->
+        <div class="card-selector">
+            <!-- 遊戲記錄 -->
+            <div class="game-record">
+                <div class="record-header">
+                    <div class="record-title">
+                        <i class="fas fa-history"></i> 遊戲記錄
+                    </div>
+                    <div class="record-controls">
+                        <button class="control-btn clear-btn" id="clearBtn">
+                            <i class="fas fa-trash"></i> 清空記錄
+                        </button>
+                        <button class="control-btn undo-btn" id="undoBtn">
+                            <i class="fas fa-undo"></i> 撤銷上一局
+                        </button>
+                    </div>
+                </div>
+
+                <div class="record-container">
+                    <div class="record-grid" id="recordGrid">
+                        <!-- 記錄項目將動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 結果按鈕 -->
+                <div class="result-buttons">
+                    <button class="result-btn banker" id="bankerBtn">
+                        <i class="fas fa-crown"></i><br>莊
+                    </button>
+                    <button class="result-btn tie" id="tieBtn">
+                        <i class="fas fa-handshake"></i><br>和
+                    </button>
+                    <button class="result-btn player" id="playerBtn">
+                        <i class="fas fa-user"></i><br>閒
+                    </button>
+                </div>
+            </div>
+            
+            <div class="selector-title">
+                選擇牌面顏色
+            </div>
+            
+            <div class="cards-layout">
+                <!-- 閒家區域 - 左側 -->
+                <div class="player-side">
+                    <div class="player-label">閒</div>
+                    <div class="triangle-layout">
+                        <div class="top-row">
+                            <div class="card-slot" data-index="0" data-type="player"></div>
+                            <div class="card-slot" data-index="1" data-type="player"></div>
+                        </div>
+                        <div class="bottom-row">
+                            <div class="card-slot" data-index="2" data-type="player"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 莊家區域 - 右側 -->
+                <div class="player-side">
+                    <div class="player-label">莊</div>
+                    <div class="triangle-layout">
+                        <div class="top-row">
+                            <div class="card-slot" data-index="0" data-type="banker"></div>
+                            <div class="card-slot" data-index="1" data-type="banker"></div>
+                        </div>
+                        <div class="bottom-row">
+                            <div class="card-slot" data-index="2" data-type="banker"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：分析和走勢 -->
+        <div class="analysis-panel">
+            <!-- 預測建議 -->
+            <div class="prediction-section">
+                <div class="section-title">
+                    <i class="fas fa-crystal-ball"></i> 預測建議
+                </div>
+                <div class="prediction-result" id="predictionResult">
+                    <div class="prediction-text">記錄至少5局後顯示預測</div>
+                    <div class="confidence">準確度將根據歷史數據計算</div>
+                </div>
+            </div>
+
+            <!-- 統計資料 -->
+            <div class="statistics-section">
+                <div class="section-title">
+                    <i class="fas fa-chart-pie"></i> 統計資料
+                </div>
+                <div class="stat-item">
+                    <span>總局數：</span>
+                    <span id="totalGames">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>莊勝：</span>
+                    <span id="bankerWins">0 (0%)</span>
+                </div>
+                <div class="stat-item">
+                    <span>閒勝：</span>
+                    <span id="playerWins">0 (0%)</span>
+                </div>
+                <div class="stat-item">
+                    <span>和局：</span>
+                    <span id="tieGames">0 (0%)</span>
+                </div>
+            </div>
+
+            <!-- 趨勢分析 -->
+            <div class="trend-section">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i> 趨勢分析
+                </div>
+                <div class="trend-chart" id="trendChart">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 內嵌認證功能，避免外部載入問題
+        class Auth {
+            constructor() {
+                this.user = null;
+                this.token = localStorage.getItem('token');
+                this.loadUser();
+            }
+
+            loadUser() {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        this.user = JSON.parse(userStr);
+                    } catch (e) {
+                        console.error('解析用戶數據失敗:', e);
+                        this.logout();
+                    }
+                }
+            }
+
+            isAuthenticated() {
+                return !!(this.token && this.user);
+            }
+
+            getUser() {
+                return this.user;
+            }
+
+            isAdmin() {
+                return this.user && this.user.role === 'admin';
+            }
+
+            logout() {
+                this.user = null;
+                this.token = null;
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+
+        // 全域認證物件
+        const auth = new Auth();
+        
+        // 全域登出函數
+        function logout() {
+            auth.logout();
+        }
+    </script>
+    <script>
+        // 牌色選擇函數
+        function testCardClick(element) {
+            console.log('=== 牌色選擇被點擊 ===');
+            console.log('元素:', element);
+            console.log('元素類名:', element.className);
+            
+            const type = element.getAttribute('data-type'); // player 或 banker
+            const index = parseInt(element.getAttribute('data-index')); // 0, 1, 2
+            
+            console.log(`類型: ${type}, 索引: ${index}`);
+            
+            // 獲取當前顏色狀態
+            let currentColor = null;
+            if (element.classList.contains('red')) {
+                currentColor = 'red';
+            } else if (element.classList.contains('black')) {
+                currentColor = 'black';
+            }
+            
+            console.log(`當前顏色: ${currentColor}`);
+            
+            // 切換顏色
+            let nextColor;
+            if (currentColor === null) {
+                nextColor = 'red';
+            } else if (currentColor === 'red') {
+                nextColor = 'black';
+            } else if (currentColor === 'black') {
+                nextColor = null; // 可以取消選擇
+            }
+            
+            console.log(`下一個顏色: ${nextColor}`);
+            
+            // 更新視覺效果
+            if (nextColor) {
+                element.className = `card-slot ${nextColor}`;
+            } else {
+                element.className = 'card-slot';
+            }
+            
+            console.log(`更新後類名: ${element.className}`);
+            
+            // 更新遊戲狀態
+            if (game && game.currentRound) {
+                game.currentRound[type].cards[index] = nextColor;
+                console.log(`${type} 第${index + 1}張牌設為: ${nextColor}`);
+                console.log('當前遊戲狀態:', game.currentRound);
+            } else {
+                console.log('遊戲對象不存在或當前回合不存在');
+            }
+            
+            console.log('=== 牌色選擇處理完成 ===');
+        }
+
+        // 遊戲狀態管理
+        class BaccaratGame {
+            constructor() {
+                this.gameHistory = [];
+                this.currentRound = {
+                    player: { cards: [null, null, null] }, // 恢復三張牌
+                    banker: { cards: [null, null, null] }  // 恢復三張牌
+                };
+                this.init();
+            }
+
+            init() {
+                this.updateDisplay();
+                this.loadGameHistory();
+                this.updateUserInfo();
+            }
+
+            updateUserInfo() {
+                if (auth.isAuthenticated()) {
+                    const user = auth.getUser();
+                    console.log('當前用戶:', user);
+                    document.getElementById('username').textContent = user.username;
+                    
+                    // 如果是管理員，顯示後台管理按鈕
+                    const adminBtn = document.getElementById('adminBtn');
+                    if (user.role === 'admin') {
+                        console.log('顯示管理員按鈕');
+                        adminBtn.classList.remove('hidden');
+                    } else {
+                        console.log('隱藏管理員按鈕');
+                        adminBtn.classList.add('hidden');
+                    }
+                }
+            }
+
+            // 記錄遊戲結果
+            recordResult(result) {
+                // 檢查閒家和莊家的前兩張牌是否都已記錄
+                const playerCard1 = this.currentRound.player.cards[0];
+                const playerCard2 = this.currentRound.player.cards[1];
+                const bankerCard1 = this.currentRound.banker.cards[0];
+                const bankerCard2 = this.currentRound.banker.cards[1];
+
+                if (!playerCard1 || !playerCard2 || !bankerCard1 || !bankerCard2) {
+                    alert('請記錄閒家和莊家的前兩張牌色！\n(第三張補牌可選)');
+                    return;
+                }
+
+                console.log('記錄結果:', result);
+                console.log('當前牌面:', this.currentRound);
+
+                // 記錄這一局
+                const round = {
+                    timestamp: new Date(),
+                    player: [...this.currentRound.player.cards],
+                    banker: [...this.currentRound.banker.cards],
+                    result: result
+                };
+
+                this.gameHistory.push(round);
+                this.saveGameHistory();
+                this.updateDisplay();
+                this.resetCurrentRound();
+                this.generatePrediction();
+            }
+
+            // 重置當前回合
+            resetCurrentRound() {
+                this.currentRound = {
+                    player: { cards: [null, null, null] },
+                    banker: { cards: [null, null, null] }
+                };
+
+                // 重置牌的顯示
+                document.querySelectorAll('.card-slot').forEach(slot => {
+                    slot.className = 'card-slot';
+                });
+            }
+
+            // 撤銷上一局
+            undoLastRecord() {
+                if (this.gameHistory.length > 0) {
+                    this.gameHistory.pop();
+                    this.saveGameHistory();
+                    this.updateDisplay();
+                    this.generatePrediction();
+                }
+            }
+
+            // 清空所有記錄
+            clearAllRecords() {
+                if (confirm('確定要清空所有遊戲記錄嗎？')) {
+                    this.gameHistory = [];
+                    this.saveGameHistory();
+                    this.updateDisplay();
+                    this.resetCurrentRound();
+                    document.getElementById('predictionResult').innerHTML = `
+                        <div class="prediction-text">記錄至少5局後顯示預測</div>
+                        <div class="confidence">準確度將根據歷史數據計算</div>
+                    `;
+                }
+            }
+
+            // 更新顯示
+            updateDisplay() {
+                this.updateRecordGrid();
+                this.updateStatistics();
+            }
+
+            // 更新記錄網格
+            updateRecordGrid() {
+                const grid = document.getElementById('recordGrid');
+                grid.innerHTML = '';
+
+                // 顯示實際的遊戲記錄
+                this.gameHistory.forEach((round, index) => {
+                    const item = document.createElement('div');
+                    item.className = `record-item ${round.result}`;
+                    
+                    let symbol = '';
+                    switch (round.result) {
+                        case 'banker': symbol = '莊'; break;
+                        case 'player': symbol = '閒'; break;
+                        case 'tie': symbol = '和'; break;
+                    }
+                    
+                    item.textContent = symbol;
+                    item.title = `第${index + 1}局：${symbol}`;
+                    grid.appendChild(item);
+                });
+
+                // 添加空的佔位格子來顯示網格結構（5行×20列 = 100個格子）
+                const totalCells = Math.max(100, Math.ceil(this.gameHistory.length / 100) * 100);
+                for (let i = this.gameHistory.length; i < totalCells; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'record-item empty';
+                    grid.appendChild(item);
+                }
+            }
+
+            // 更新統計資料
+            updateStatistics() {
+                const total = this.gameHistory.length;
+                const bankerWins = this.gameHistory.filter(r => r.result === 'banker').length;
+                const playerWins = this.gameHistory.filter(r => r.result === 'player').length;
+                const ties = this.gameHistory.filter(r => r.result === 'tie').length;
+
+                document.getElementById('totalGames').textContent = total;
+                document.getElementById('bankerWins').textContent = 
+                    `${bankerWins} (${total > 0 ? Math.round(bankerWins/total*100) : 0}%)`;
+                document.getElementById('playerWins').textContent = 
+                    `${playerWins} (${total > 0 ? Math.round(playerWins/total*100) : 0}%)`;
+                document.getElementById('tieGames').textContent = 
+                    `${ties} (${total > 0 ? Math.round(ties/total*100) : 0}%)`;
+            }
+
+            // 生成預測建議
+            generatePrediction() {
+                if (this.gameHistory.length < 5) {
+                    return;
+                }
+
+                const recent = this.gameHistory.slice(-10);
+                const analysis = this.analyzeTrends(recent);
+                
+                document.getElementById('predictionResult').innerHTML = `
+                    <div class="prediction-text">建議下注：<strong>${analysis.suggestion}</strong></div>
+                    <div class="confidence">信心度：${analysis.confidence}% | 基於${recent.length}局分析</div>
+                `;
+            }
+
+            // 分析趨勢
+            analyzeTrends(history) {
+                const last5 = history.slice(-5);
+                const bankerCount = last5.filter(r => r.result === 'banker').length;
+                const playerCount = last5.filter(r => r.result === 'player').length;
+                const tieCount = last5.filter(r => r.result === 'tie').length;
+
+                // 簡單的預測邏輯
+                let suggestion = '';
+                let confidence = 0;
+
+                if (bankerCount >= 3) {
+                    suggestion = '閒家';
+                    confidence = 60 + (bankerCount - 3) * 10;
+                } else if (playerCount >= 3) {
+                    suggestion = '莊家';
+                    confidence = 60 + (playerCount - 3) * 10;
+                } else if (tieCount >= 2) {
+                    suggestion = bankerCount > playerCount ? '莊家' : '閒家';
+                    confidence = 55;
+                } else {
+                    suggestion = bankerCount > playerCount ? '閒家' : '莊家';
+                    confidence = 50;
+                }
+
+                return { suggestion, confidence: Math.min(confidence, 85) };
+            }
+
+            // 保存遊戲歷史
+            saveGameHistory() {
+                localStorage.setItem('baccaratGameHistory', JSON.stringify(this.gameHistory));
+            }
+
+            // 載入遊戲歷史
+            loadGameHistory() {
+                const saved = localStorage.getItem('baccaratGameHistory');
+                if (saved) {
+                    this.gameHistory = JSON.parse(saved);
+                    this.updateDisplay();
+                    if (this.gameHistory.length >= 5) {
+                        this.generatePrediction();
+                    }
+                }
+            }
+        }
+
+        // 全域函數
+        let game;
+
+        function cycleCardColor(element) {
+            console.log('cycleCardColor 函數被調用');
+            console.log('element:', element);
+            
+            // 檢查game對象是否存在
+            if (!window.game) {
+                console.error('game 對象未初始化');
+                return;
+            }
+            
+            const type = element.getAttribute('data-type');
+            const index = parseInt(element.getAttribute('data-index'));
+            
+            console.log(`類型: ${type}, 索引: ${index}`);
+            
+            // 獲取當前顏色狀態
+            let currentColor = null;
+            if (element.classList.contains('red')) {
+                currentColor = 'red';
+            } else if (element.classList.contains('black')) {
+                currentColor = 'black';
+            }
+            
+            // 按照 透明->紅->黑->紅->黑... 的順序切換
+            let nextColor;
+            if (currentColor === null) {
+                nextColor = 'red';
+            } else if (currentColor === 'red') {
+                nextColor = 'black';
+            } else if (currentColor === 'black') {
+                nextColor = 'red';
+            }
+            
+            console.log(`當前顏色: ${currentColor}, 下一個顏色: ${nextColor}`);
+            
+            // 更新遊戲狀態
+            game.currentRound[type].cards[index] = nextColor;
+            
+            // 更新視覺效果
+            element.className = `card-slot ${nextColor}`;
+            
+            console.log(`${type} 牌位 ${index} 切換到: ${nextColor}`);
+        }
+
+        function recordResult(result) {
+            game.recordResult(result);
+        }
+
+        function undoLastRecord() {
+            game.undoLastRecord();
+        }
+
+        function clearAllRecords() {
+            game.clearAllRecords();
+        }
+
+        function goToAdmin() {
+            console.log('goToAdmin 函數被調用');
+            // 跳轉到管理員後台
+            window.location.href = '/admin';
+        }
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 檢查登入狀態
+            if (!auth.isAuthenticated()) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // 初始化遊戲
+            game = new BaccaratGame();
+            window.game = game; // 確保全域可用
+            
+            console.log('遊戲初始化完成');
+            console.log('game對象:', game);
+
+            // 綁定牌位點擊事件
+            const cardSlots = document.querySelectorAll('.card-slot');
+            console.log(`找到 ${cardSlots.length} 個牌位元素`);
+            
+            cardSlots.forEach((slot, index) => {
+                console.log(`綁定第 ${index + 1} 個牌位:`, slot);
+                console.log(`data-type: ${slot.getAttribute('data-type')}, data-index: ${slot.getAttribute('data-index')}`);
+                
+                slot.addEventListener('click', function() {
+                    console.log(`=== 牌位 ${index + 1} 被點擊 ===`);
+                    console.log('this:', this);
+                    testCardClick(this);
+                });
+                
+                // 添加觸摸事件支持（用於手機）
+                slot.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    console.log(`=== 牌位 ${index + 1} 被觸摸 ===`);
+                    testCardClick(this);
+                });
+            });
+            
+            // 綁定按鈕事件
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminBtn = document.getElementById('adminBtn');
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('登出按鈕被點擊');
+                    logout();
+                });
+            }
+            
+            if (adminBtn) {
+                adminBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('後台管理按鈕被點擊');
+                    goToAdmin();
+                });
+            }
+            
+            // 綁定遊戲記錄按鈕事件
+            const clearBtn = document.getElementById('clearBtn');
+            const undoBtn = document.getElementById('undoBtn');
+            const bankerBtn = document.getElementById('bankerBtn');
+            const tieBtn = document.getElementById('tieBtn');
+            const playerBtn = document.getElementById('playerBtn');
+            
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    console.log('清空記錄按鈕被點擊');
+                    if (game) game.clearAllRecords();
+                });
+            }
+            
+            if (undoBtn) {
+                undoBtn.addEventListener('click', function() {
+                    console.log('撤銷按鈕被點擊');
+                    if (game) game.undoLastRecord();
+                });
+            }
+            
+            if (bankerBtn) {
+                bankerBtn.addEventListener('click', function() {
+                    console.log('莊家按鈕被點擊');
+                    if (game) game.recordResult('banker');
+                });
+            }
+            
+            if (tieBtn) {
+                tieBtn.addEventListener('click', function() {
+                    console.log('和局按鈕被點擊');
+                    if (game) game.recordResult('tie');
+                });
+            }
+            
+            if (playerBtn) {
+                playerBtn.addEventListener('click', function() {
+                    console.log('閒家按鈕被點擊');
+                    if (game) game.recordResult('player');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

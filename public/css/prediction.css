@@ -1,0 +1,564 @@
+/* 預測頁面樣式 */
+.prediction-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.prediction-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: white;
+}
+
+.prediction-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px var(--shadow-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.prediction-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.prediction-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* 牌色選擇器區域 */
+.card-selector-section {
+    background: var(--background-white);
+    border-radius: var(--border-radius-large);
+    padding: 2rem;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    height: fit-content;
+}
+
+.card-selector-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-selector-section > p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.card-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.card-slots {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    border: 2px dashed var(--border-medium);
+}
+
+.card-slot {
+    flex: 1;
+    aspect-ratio: 3/4;
+    max-width: 80px;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-light);
+    background: var(--background-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.card-slot:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--shadow-medium);
+}
+
+.card-slot.selected {
+    border-color: var(--primary-color);
+    border-width: 3px;
+    box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
+}
+
+.card-slot.red {
+    background: linear-gradient(135deg, #f44336, #e53935);
+    color: white;
+    border-color: #d32f2f;
+}
+
+.card-slot.black {
+    background: linear-gradient(135deg, #424242, #212121);
+    color: white;
+    border-color: #1a1a1a;
+}
+
+.card-placeholder {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.card-slot.red .card-placeholder,
+.card-slot.black .card-placeholder {
+    color: white;
+}
+
+.card-placeholder i {
+    font-size: 1.5rem;
+}
+
+.color-picker {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.color-btn {
+    flex: 1;
+    max-width: 150px;
+    padding: 1rem;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius);
+    background: var(--background-white);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.color-btn.red {
+    color: #d32f2f;
+    border-color: #d32f2f;
+}
+
+.color-btn.red:hover {
+    background: linear-gradient(135deg, #f44336, #e53935);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(244, 67, 54, 0.3);
+}
+
+.color-btn.black {
+    color: #424242;
+    border-color: #424242;
+}
+
+.color-btn.black:hover {
+    background: linear-gradient(135deg, #424242, #212121);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(66, 66, 66, 0.3);
+}
+
+.color-btn i {
+    font-size: 1.5rem;
+}
+
+.selection-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.selection-actions .action-btn {
+    flex: 1;
+}
+
+/* 預測結果區域 */
+.prediction-result-section {
+    background: var(--background-white);
+    border-radius: var(--border-radius-large);
+    padding: 2rem;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.prediction-result-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.result-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.result-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+}
+
+.predicted-outcome h3 {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.outcome-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.outcome-display.banker {
+    color: var(--success-color);
+}
+
+.outcome-display.player {
+    color: var(--info-color);
+}
+
+.outcome-display.tie {
+    color: var(--warning-color);
+}
+
+.confidence-meter h4 {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.confidence-bar {
+    width: 120px;
+    height: 20px;
+    background: var(--border-light);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 10px;
+    transition: width 0.8s ease;
+    position: relative;
+}
+
+.confidence-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.confidence-value {
+    text-align: center;
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.probability-breakdown h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.probability-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.prob-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.prob-label {
+    min-width: 60px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.prob-bar {
+    flex: 1;
+    height: 12px;
+    background: var(--border-light);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.prob-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s ease;
+}
+
+.prob-value {
+    min-width: 40px;
+    text-align: right;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.analysis-factors h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.factors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.factor-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.factor-item i {
+    color: var(--info-color);
+}
+
+.result-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.result-actions .action-btn {
+    flex: 1;
+    font-weight: 600;
+}
+
+/* 歷史記錄區域 */
+.history-container {
+    grid-column: 1 / -1;
+    background: var(--background-white);
+    border-radius: var(--border-radius-large);
+    padding: 2rem;
+    box-shadow: 0 8px 32px var(--shadow-light);
+    margin-top: 2rem;
+}
+
+.history-container h2 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.history-item {
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    background: var(--background-white);
+    transition: var(--transition);
+}
+
+.history-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--shadow-medium);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.history-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.history-cards {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.history-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.predicted-label {
+    color: var(--text-secondary);
+}
+
+.actual-label {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+    .prediction-workspace {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .result-main {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .confidence-meter {
+        width: 100%;
+    }
+    
+    .confidence-bar {
+        width: 200px;
+        margin: 0 auto 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .prediction-container {
+        padding: 1rem;
+    }
+    
+    .prediction-header h1 {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .card-slots {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .card-slot {
+        max-width: 60px;
+    }
+    
+    .color-picker {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .color-btn {
+        max-width: none;
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    .selection-actions {
+        flex-direction: column;
+    }
+    
+    .result-actions {
+        flex-direction: column;
+    }
+    
+    .history-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-selector-section,
+    .prediction-result-section,
+    .history-container {
+        padding: 1.5rem;
+    }
+    
+    .card-slot {
+        max-width: 50px;
+    }
+    
+    .card-placeholder {
+        font-size: 0.7rem;
+    }
+    
+    .card-placeholder i {
+        font-size: 1.2rem;
+    }
+    
+    .outcome-display {
+        font-size: 1.5rem;
+    }
+    
+    .prob-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .prob-bar {
+        width: 100%;
+    }
+}
