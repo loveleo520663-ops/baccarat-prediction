@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const predictionRoutes = require('./routes/prediction');
 const licenseRoutes = require('./routes/license');
+const memoryDB = require('./memoryDB');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -163,6 +164,8 @@ app.listen(PORT, '0.0.0.0', (err) => {
     return;
   }
   console.log(`伺服器運行在埠 ${PORT}`);
+  console.log('內存資料庫已初始化');
+  console.log('預設帳號：admin/password 和 test/password');
   console.log('部署成功！');
 });
 
