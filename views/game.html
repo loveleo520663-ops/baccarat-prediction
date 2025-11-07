@@ -479,7 +479,7 @@
             gap: 20px;
         }
 
-        .statistics-section, .trend-section {
+        .statistics-section, .trend-section, .stock-trend-section {
             background: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
             border: 3px solid #d4af37;
             border-radius: 15px;
@@ -531,17 +531,29 @@
         }
 
         .trend-chart {
-            height: 200px;
-            background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(64, 64, 64, 0.3) 100%);
-            border: 2px solid rgba(212, 175, 55, 0.3);
-            border-radius: 8px;
-            padding: 10px;
+            height: 220px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            padding: 15px;
             position: relative;
+            box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
-        #trendCanvas {
+        .stock-chart {
+            height: 180px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            padding: 15px;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+
+        #trendCanvas, #stockCanvas {
             width: 100%;
             height: 100%;
+            border-radius: 8px;
         }
 
 
@@ -771,8 +783,13 @@
             }
             
             .trend-chart {
-                height: 150px;
-                padding: 8px;
+                height: 160px;
+                padding: 10px;
+            }
+
+            .stock-chart {
+                height: 140px;
+                padding: 10px;
             }
             
             .stat-item {
@@ -827,6 +844,10 @@
             
             .trend-chart {
                 height: 160px;
+            }
+
+            .stock-chart {
+                height: 130px;
             }
         }
 
@@ -950,6 +971,10 @@
             
             .trend-chart {
                 height: 140px;
+            }
+
+            .stock-chart {
+                height: 120px;
             }
         }
 
@@ -1088,6 +1113,26 @@
 
         <!-- 右側：分析和走勢 -->
         <div class="analysis-panel">
+            <!-- 趨勢圖表 -->
+            <div class="trend-section">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i> 趨勢圖表
+                </div>
+                <div class="trend-chart" id="trendChart">
+                    <canvas id="trendCanvas" width="300" height="180"></canvas>
+                </div>
+            </div>
+
+            <!-- 股票風格趨勢圖 -->
+            <div class="stock-trend-section">
+                <div class="section-title">
+                    <i class="fas fa-chart-area"></i> 股票風格走勢
+                </div>
+                <div class="stock-chart" id="stockChart">
+                    <canvas id="stockCanvas" width="300" height="150"></canvas>
+                </div>
+            </div>
+
             <!-- 統計資料 -->
             <div class="statistics-section">
                 <div class="section-title">
@@ -1108,17 +1153,6 @@
                 <div class="stat-item">
                     <span>和局：</span>
                     <span id="tieGames">0 (0%)</span>
-                </div>
-            </div>
-
-            <!-- 趨勢分析 -->
-            <!-- 趨勢圖表 -->
-            <div class="trend-section">
-                <div class="section-title">
-                    <i class="fas fa-chart-line"></i> 趨勢圖表
-                </div>
-                <div class="trend-chart" id="trendChart">
-                    <canvas id="trendCanvas" width="300" height="150"></canvas>
                 </div>
             </div>
         </div>
@@ -1411,6 +1445,7 @@
 
                 // 更新趨勢圖表
                 this.updateTrendChart();
+                this.updateStockChart();
             }
 
 
@@ -1539,6 +1574,122 @@
                     ctx.fillText('50%', width - 5, height * 0.5 + 3);
                     ctx.fillText('25%', width - 5, height * 0.75 + 3);
                 }
+            }
+
+            // 更新股票風格圖表
+            updateStockChart() {
+                const canvas = document.getElementById('stockCanvas');
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // 清空畫布
+                ctx.clearRect(0, 0, width, height);
+                
+                if (this.gameHistory.length < 3) {
+                    // 顯示等待數據的提示
+                    ctx.fillStyle = '#00ff88';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('📈 股票走勢', width/2, height/2 - 20);
+                    ctx.font = '12px Arial';
+                    ctx.fillStyle = '#66ffaa';
+                    ctx.fillText('需要更多數據來顯示K線圖', width/2, height/2 + 5);
+                    return;
+                }
+
+                // 取最近15局數據作為K線
+                const recentGames = this.gameHistory.slice(-15);
+                const candleWidth = (width - 40) / recentGames.length;
+                const padding = 20;
+                
+                // 計算價格範圍（以莊家勝率為基礎）
+                let prices = [];
+                let bankerWins = 0;
+                let totalNonTie = 0;
+                
+                recentGames.forEach((game, index) => {
+                    if (game.result === 'banker') bankerWins++;
+                    if (game.result !== 'tie') totalNonTie++;
+                    
+                    if (totalNonTie > 0) {
+                        const rate = bankerWins / totalNonTie;
+                        prices.push({
+                            open: index === 0 ? 0.5 : prices[index-1]?.close || 0.5,
+                            close: rate,
+                            high: Math.max(rate + Math.random() * 0.1, rate),
+                            low: Math.min(rate - Math.random() * 0.1, rate),
+                            isGreen: rate > (prices[index-1]?.close || 0.5)
+                        });
+                    }
+                });
+
+                if (prices.length === 0) return;
+
+                const minPrice = Math.min(...prices.map(p => Math.min(p.low, p.open, p.close, p.high)));
+                const maxPrice = Math.max(...prices.map(p => Math.max(p.high, p.open, p.close, p.low)));
+                const priceRange = Math.max(maxPrice - minPrice, 0.1);
+
+                // 繪製背景網格
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+                ctx.lineWidth = 1;
+                for (let i = 1; i <= 4; i++) {
+                    const y = (height / 5) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(padding, y);
+                    ctx.lineTo(width - padding, y);
+                    ctx.stroke();
+                }
+
+                // 繪製K線圖
+                prices.forEach((price, index) => {
+                    const x = padding + index * candleWidth + candleWidth / 2;
+                    const openY = height - padding - ((price.open - minPrice) / priceRange) * (height - 2 * padding);
+                    const closeY = height - padding - ((price.close - minPrice) / priceRange) * (height - 2 * padding);
+                    const highY = height - padding - ((price.high - minPrice) / priceRange) * (height - 2 * padding);
+                    const lowY = height - padding - ((price.low - minPrice) / priceRange) * (height - 2 * padding);
+                    
+                    const isGreen = price.close > price.open;
+                    const color = isGreen ? '#00ff88' : '#ff4444';
+                    
+                    // 上下影線
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, highY);
+                    ctx.lineTo(x, lowY);
+                    ctx.stroke();
+                    
+                    // K線體
+                    ctx.fillStyle = isGreen ? color : color;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    
+                    const bodyWidth = candleWidth * 0.6;
+                    const bodyHeight = Math.abs(closeY - openY);
+                    const bodyY = Math.min(closeY, openY);
+                    
+                    if (isGreen) {
+                        ctx.fillRect(x - bodyWidth/2, bodyY, bodyWidth, bodyHeight);
+                    } else {
+                        ctx.strokeRect(x - bodyWidth/2, bodyY, bodyWidth, bodyHeight);
+                    }
+                });
+
+                // 添加標題和當前價格
+                ctx.fillStyle = '#00ff88';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('莊家勝率K線圖', 10, 20);
+                
+                const currentPrice = prices[prices.length - 1]?.close || 0.5;
+                const currentColor = prices[prices.length - 1]?.isGreen ? '#00ff88' : '#ff4444';
+                ctx.fillStyle = currentColor;
+                ctx.textAlign = 'right';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText((currentPrice * 100).toFixed(1) + '%', width - 10, 20);
             }
 
             // 生成預測建議
@@ -1788,6 +1939,7 @@
                 canvas.addEventListener('click', function() {
                     if (game) {
                         game.updateTrendChart();
+                        game.updateStockChart();
                     }
                 });
             }
@@ -1805,6 +1957,7 @@
             // 重新繪製圖表
             if (game) {
                 game.updateTrendChart();
+                game.updateStockChart();
             }
         }
     </script>
