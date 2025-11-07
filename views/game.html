@@ -202,26 +202,24 @@
             background: #404040;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             position: relative;
-            transform: rotate(90deg);
-            transform-origin: center;
         }
 
         .card-slot.red {
             background: #DC143C;
             border-color: #FF6B6B;
             box-shadow: 0 0 15px rgba(220, 20, 60, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.1);
-            transform: rotate(90deg) scale(1.05);
+            transform: scale(1.05);
         }
 
         .card-slot.black {
             background: #1a1a1a;
             border-color: #FFFFFF;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
-            transform: rotate(90deg) scale(1.05);
+            transform: scale(1.05);
         }
 
         .card-slot:hover {
-            transform: rotate(90deg) scale(1.1);
+            transform: scale(1.1);
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
             border-color: #d4af37;
         }
@@ -229,16 +227,40 @@
         .card-slot.red:hover {
             box-shadow: 0 0 25px rgba(220, 20, 60, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.2);
             border-color: #FF8E8E;
-            transform: rotate(90deg) scale(1.15);
+            transform: scale(1.15);
         }
 
         .card-slot.black:hover {
             box-shadow: 0 0 25px rgba(255, 255, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
             border-color: #FFFFFF;
+            transform: scale(1.15);
+        }
+
+        /* 只有下面兩張卡片（第三張牌）旋轉90度 */
+        .card-slot[data-index="2"] {
+            transform: rotate(90deg);
+            transform-origin: center;
+        }
+
+        .card-slot[data-index="2"]:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .card-slot[data-index="2"].red {
+            transform: rotate(90deg) scale(1.05);
+        }
+
+        .card-slot[data-index="2"].red:hover {
             transform: rotate(90deg) scale(1.15);
         }
 
-        /* 所有卡片統一旋轉90度 - 無需特殊處理 */
+        .card-slot[data-index="2"].black {
+            transform: rotate(90deg) scale(1.05);
+        }
+
+        .card-slot[data-index="2"].black:hover {
+            transform: rotate(90deg) scale(1.15);
+        }
 
         /* 遊戲記錄區域 */
         .game-record {
@@ -886,7 +908,30 @@
                 border-radius: 8px;
             }
             
-            /* 所有卡片統一90度旋轉 - 平板版 */
+            /* 平板版：只有第三張牌旋轉 */
+            .card-slot[data-index="2"] {
+                transform: rotate(90deg) !important;
+            }
+
+            .card-slot[data-index="2"]:hover {
+                transform: rotate(90deg) scale(1.1) !important;
+            }
+
+            .card-slot[data-index="2"].red {
+                transform: rotate(90deg) scale(1.05) !important;
+            }
+
+            .card-slot[data-index="2"].red:hover {
+                transform: rotate(90deg) scale(1.15) !important;
+            }
+
+            .card-slot[data-index="2"].black {
+                transform: rotate(90deg) scale(1.05) !important;
+            }
+
+            .card-slot[data-index="2"].black:hover {
+                transform: rotate(90deg) scale(1.15) !important;
+            }
             
             .triangle-layout {
                 gap: 15px; /* 增加間距，讓第三張卡片往下移 */
@@ -1088,7 +1133,30 @@
                 font-size: 0.65rem;
             }
             
-            /* 所有卡片統一90度旋轉 - 小手機版 */
+            /* 小手機版：只有第三張牌旋轉 */
+            .card-slot[data-index="2"] {
+                transform: rotate(90deg) !important;
+            }
+
+            .card-slot[data-index="2"]:hover {
+                transform: rotate(90deg) scale(1.1) !important;
+            }
+
+            .card-slot[data-index="2"].red {
+                transform: rotate(90deg) scale(1.05) !important;
+            }
+
+            .card-slot[data-index="2"].red:hover {
+                transform: rotate(90deg) scale(1.15) !important;
+            }
+
+            .card-slot[data-index="2"].black {
+                transform: rotate(90deg) scale(1.05) !important;
+            }
+
+            .card-slot[data-index="2"].black:hover {
+                transform: rotate(90deg) scale(1.15) !important;
+            }
             
             .triangle-layout {
                 gap: 12px; /* 小螢幕版也增加間距 */
