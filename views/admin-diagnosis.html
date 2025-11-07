@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔍 完整管理員 API 診斷</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-section h3 { margin-top: 0; color: #333; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+        .loading { background: #fff3cd; border: 1px solid #ffeaa7; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 完整管理員 API 診斷工具</h1>
+        
+        <div class="test-section">
+            <h3>🔐 第一步：管理員認證</h3>
+            <input type="text" id="username" value="admin" placeholder="管理員帳號">
+            <input type="password" id="password" value="admin123" placeholder="管理員密碼">
+            <button onclick="testLogin()">🚀 登錄測試</button>
+            <div id="loginResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🛠 第二步：無認證 API 測試</h3>
+            <button onclick="testBypassAPIs()">🧪 測試繞過路由</button>
+            <div id="bypassResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 第三步：用戶 API 測試</h3>
+            <button onclick="testUsersAPI()">📊 測試用戶 API</button>
+            <div id="usersResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 第四步：統計 API 測試</h3>
+            <button onclick="testStatsAPI()">📈 測試統計 API</button>
+            <div id="statsResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔑 第五步：許可證 API 測試</h3>
+            <button onclick="testLicenseAPI()">🎫 測試許可證 API</button>
+            <div id="licenseResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 第六步：完整流程測試</h3>
+            <button onclick="testCompleteFlow()">🔄 完整流程測試</button>
+            <div id="completeResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('token');
+        
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            container.style.display = 'block';
+            container.className = `result ${type}`;
+            container.innerHTML = message;
+        }
+
+        function appendLog(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML += '\n' + message;
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            log('loginResult', '🔄 正在測試登錄...', 'loading');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    localStorage.setItem('token', authToken);
+                    
+                    log('loginResult', 
+                        `✅ 登錄成功！\n` +
+                        `狀態碼: ${response.status}\n` +
+                        `用戶資料: ${JSON.stringify(data.user, null, 2)}\n` +
+                        `令牌 (前50字): ${authToken.substring(0, 50)}...`, 
+                        'success'
+                    );
+                } else {
+                    log('loginResult', 
+                        `❌ 登錄失敗\n` +
+                        `狀態碼: ${response.status}\n` +
+                        `錯誤: ${JSON.stringify(data, null, 2)}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                log('loginResult', `❌ 登錄異常: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBypassAPIs() {
+            log('bypassResult', '🔄 正在測試繞過路由...', 'loading');
+            
+            try {
+                // 測試用戶繞過路由
+                const usersResponse = await fetch('/test/admin/users');
+                const usersData = await usersResponse.json();
+                
+                // 測試統計繞過路由
+                const statsResponse = await fetch('/test/admin/stats');
+                const statsData = await statsResponse.json();
+                
+                log('bypassResult', 
+                    `✅ 繞過路由測試完成\n\n` +
+                    `用戶路由狀態: ${usersResponse.status}\n` +
+                    `用戶數據: ${JSON.stringify(usersData, null, 2)}\n\n` +
+                    `統計路由狀態: ${statsResponse.status}\n` +
+                    `統計數據: ${JSON.stringify(statsData, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                log('bypassResult', `❌ 繞過路由異常: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUsersAPI() {
+            if (!authToken) {
+                log('usersResult', '❌ 請先登錄獲取令牌', 'error');
+                return;
+            }
+            
+            log('usersResult', '🔄 正在測試用戶 API...', 'loading');
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                
+                const data = await response.json();
+                
+                log('usersResult', 
+                    `狀態碼: ${response.status}\n` +
+                    `響應: ${JSON.stringify(data, null, 2)}`, 
+                    response.ok ? 'success' : 'error'
+                );
+            } catch (error) {
+                log('usersResult', `❌ 用戶 API 異常: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStatsAPI() {
+            if (!authToken) {
+                log('statsResult', '❌ 請先登錄獲取令牌', 'error');
+                return;
+            }
+            
+            log('statsResult', '🔄 正在測試統計 API...', 'loading');
+            
+            try {
+                const response = await fetch('/api/admin/stats', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                
+                const data = await response.json();
+                
+                log('statsResult', 
+                    `狀態碼: ${response.status}\n` +
+                    `響應: ${JSON.stringify(data, null, 2)}`, 
+                    response.ok ? 'success' : 'error'
+                );
+            } catch (error) {
+                log('statsResult', `❌ 統計 API 異常: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLicenseAPI() {
+            if (!authToken) {
+                log('licenseResult', '❌ 請先登錄獲取令牌', 'error');
+                return;
+            }
+            
+            log('licenseResult', '🔄 正在測試許可證 API...', 'loading');
+            
+            try {
+                const response = await fetch('/api/admin/license/keys?page=1&limit=20', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                
+                const data = await response.json();
+                
+                log('licenseResult', 
+                    `狀態碼: ${response.status}\n` +
+                    `響應: ${JSON.stringify(data, null, 2)}`, 
+                    response.ok ? 'success' : 'error'
+                );
+            } catch (error) {
+                log('licenseResult', `❌ 許可證 API 異常: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCompleteFlow() {
+            log('completeResult', '🔄 開始完整流程測試...', 'loading');
+            
+            // 步驟1: 登錄
+            appendLog('completeResult', '\n🔐 步驟1: 登錄測試');
+            await testLogin();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 步驟2: 用戶API
+            appendLog('completeResult', '\n👥 步驟2: 用戶 API 測試');
+            await testUsersAPI();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 步驟3: 統計API
+            appendLog('completeResult', '\n📊 步驟3: 統計 API 測試');
+            await testStatsAPI();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 步驟4: 許可證API
+            appendLog('completeResult', '\n🔑 步驟4: 許可證 API 測試');
+            await testLicenseAPI();
+            
+            appendLog('completeResult', '\n🎉 完整流程測試完成！');
+        }
+
+        // 頁面載入時顯示當前令牌狀態
+        if (authToken) {
+            log('loginResult', `ℹ️ 檢測到現有令牌: ${authToken.substring(0, 50)}...`, 'info');
+        }
+    </script>
+</body>
+</html>

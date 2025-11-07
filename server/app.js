@@ -239,6 +239,14 @@ app.get('/admin-test', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/admin-test.html'));
 });
 
+app.get('/admin-diagnosis', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('ETag', 'false');
+  res.sendFile(path.join(__dirname, '../views/admin-diagnosis.html'));
+});
+
 app.get('/prediction', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
