@@ -989,7 +989,15 @@
             constructor() {
                 this.user = null;
                 this.token = localStorage.getItem('token');
+                // 清理舊的localStorage數據
+                this.cleanupOldStorage();
                 this.loadUser();
+            }
+
+            cleanupOldStorage() {
+                // 清理舊的鍵名
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('username');
             }
 
             loadUser() {
@@ -1518,15 +1526,18 @@
 
         // 頁面載入完成後初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 檢查登入狀態
-            if (!auth.isAuthenticated()) {
-                window.location.href = '/login';
-                return;
-            }
+            // 延遲檢查登入狀態，避免與登入頁面的重定向衝突
+            setTimeout(() => {
+                if (!auth.isAuthenticated()) {
+                    console.log('未認證，重定向到登入頁面');
+                    window.location.href = '/login';
+                    return;
+                }
 
-            // 初始化遊戲
-            game = new BaccaratGame();
-            window.game = game; // 確保全域可用
+                // 初始化遊戲
+                game = new BaccaratGame();
+                window.game = game; // 確保全域可用
+            }, 100);
             
             console.log('遊戲初始化完成');
             console.log('game對象:', game);

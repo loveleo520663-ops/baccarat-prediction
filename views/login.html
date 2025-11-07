@@ -271,8 +271,21 @@
         // 簡化的登入功能
         class Auth {
             constructor() {
-                this.token = localStorage.getItem('authToken');
-                this.username = localStorage.getItem('username');
+                this.token = localStorage.getItem('token');
+                this.user = null;
+                this.loadUser();
+            }
+
+            loadUser() {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        this.user = JSON.parse(userStr);
+                    } catch (e) {
+                        console.error('載入用戶資訊失敗:', e);
+                        this.user = null;
+                    }
+                }
             }
 
             async login(username, password) {
@@ -288,10 +301,10 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('username', data.user.username);
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
                         this.token = data.token;
-                        this.username = data.user.username;
+                        this.user = data.user;
                         return { success: true, user: data.user };
                     } else {
                         return { success: false, error: data.message || '登入失敗' };
@@ -303,7 +316,7 @@
             }
 
             isAuthenticated() {
-                return !!this.token;
+                return !!(this.token && this.user);
             }
         }
 
@@ -352,15 +365,28 @@
             document.getElementById('loadingOverlay').style.display = 'none';
         }
 
+        // 清理舊的localStorage數據
+        function cleanupOldStorage() {
+            // 清理舊的鍵名
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+        }
+
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 清理舊數據
+            cleanupOldStorage();
+            
             const auth = new Auth();
             
-            // 如果已登入，直接跳轉
-            if (auth.isAuthenticated()) {
-                window.location.href = '/game';
-                return;
-            }
+            // 延遲檢查登入狀態，避免重定向循環
+            setTimeout(() => {
+                if (auth.isAuthenticated()) {
+                    console.log('已認證，重定向到遊戲頁面');
+                    window.location.href = '/game';
+                    return;
+                }
+            }, 100);
             
             // 登入表單處理
             const loginForm = document.getElementById('loginForm');
