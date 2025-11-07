@@ -468,7 +468,15 @@
 
         .result-btn i {
             font-size: 2.2rem;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
+            display: block;
+            line-height: 1;
+        }
+
+        .result-btn span {
+            font-size: 1.8rem;
+            font-weight: bold;
+            line-height: 1;
         }
 
         .result-btn.banker {
@@ -978,6 +986,11 @@
 
             .result-btn i {
                 font-size: 1.6rem;
+                margin-bottom: 2px;
+            }
+
+            .result-btn span {
+                font-size: 1.3rem;
             }
             
             .control-buttons {
@@ -1074,6 +1087,11 @@
 
             .result-btn i {
                 font-size: 1.3rem;
+                margin-bottom: 2px;
+            }
+
+            .result-btn span {
+                font-size: 1.1rem;
             }
             
             .modern-trend-chart {
@@ -1195,6 +1213,11 @@
 
             .result-btn i {
                 font-size: 1.1rem;
+                margin-bottom: 1px;
+            }
+
+            .result-btn span {
+                font-size: 0.95rem;
             }
             
             .modern-trend-chart {
@@ -1331,13 +1354,16 @@
                 <!-- 結果按鈕 -->
                 <div class="result-buttons">
                     <button class="result-btn banker" id="bankerBtn">
-                        <i class="fas fa-crown"></i><br>莊
+                        <i class="fas fa-crown"></i>
+                        <span>莊</span>
                     </button>
                     <button class="result-btn tie" id="tieBtn">
-                        <i class="fas fa-handshake"></i><br>和
+                        <i class="fas fa-handshake"></i>
+                        <span>和</span>
                     </button>
                     <button class="result-btn player" id="playerBtn">
-                        <i class="fas fa-user"></i><br>閒
+                        <i class="fas fa-user"></i>
+                        <span>閒</span>
                     </button>
                 </div>
             </div>
