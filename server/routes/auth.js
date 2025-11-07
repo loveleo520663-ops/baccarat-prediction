@@ -16,9 +16,18 @@ router.post('/login', (req, res) => {
   }
 
   console.log('🔐 登錄請求:', username);
+  
+  // 檢查資料庫連接
+  const currentDb = database.getDB();
+  if (!currentDb) {
+    console.error('❌ 資料庫連接不存在');
+    return res.status(500).json({ error: '資料庫連接失敗' });
+  }
+  
+  console.log('✅ 資料庫連接正常');
 
   // 從資料庫查找用戶
-  db.get(`
+  currentDb.get(`
     SELECT id, username, password, is_active, expiration_date
     FROM users 
     WHERE username = ?
@@ -39,8 +48,14 @@ router.post('/login', (req, res) => {
     }
 
     try {
+      console.log('🔍 開始驗證密碼 for user:', username);
+      console.log('🔍 用戶資料:', { id: user.id, username: user.username, is_active: user.is_active });
+      console.log('🔍 密碼 hash:', user.password ? user.password.substring(0, 10) + '...' : 'null');
+      
       // 驗證密碼
       const isValid = await bcrypt.compare(password, user.password);
+      console.log('🔍 密碼驗證結果:', isValid);
+      
       if (!isValid) {
         console.log('❌ 密碼錯誤:', username);
         return res.status(401).json({ error: '用戶名或密碼錯誤' });
@@ -48,16 +63,18 @@ router.post('/login', (req, res) => {
 
       // 決定用戶角色 - admin 用戶有管理員權限
       const role = username === 'admin' ? 'admin' : 'user';
+      console.log('🔍 用戶角色:', role);
 
       // 檢查許可證（管理員不需要檢查）
-      if (role !== 'admin' && new Date(user.expiration_date) < new Date()) {
+      if (role !== 'admin' && user.expiration_date && new Date(user.expiration_date) < new Date()) {
         console.log('❌ 許可證過期:', username, user.expiration_date);
         return res.status(403).json({ error: '許可證已過期，請聯繫管理員' });
       }
 
-      console.log('✅ 登錄成功:', username, '角色:', role);
+      console.log('✅ 登錄驗證通過:', username, '角色:', role);
 
       // 生成 JWT
+      console.log('🔍 生成 JWT token...');
       const token = jwt.sign(
         { 
           id: user.id, 
@@ -67,6 +84,8 @@ router.post('/login', (req, res) => {
         JWT_SECRET,
         { expiresIn: '24h' }
       );
+      
+      console.log('✅ JWT token 生成成功');
 
       res.json({
         success: true,
@@ -81,7 +100,12 @@ router.post('/login', (req, res) => {
 
     } catch (error) {
       console.error('❌ 登錄處理錯誤:', error);
-      res.status(500).json({ error: '登錄失敗' });
+      console.error('❌ 錯誤堆疊:', error.stack);
+      res.status(500).json({ 
+        error: '伺服器內部錯誤',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
     }
   });
 });
