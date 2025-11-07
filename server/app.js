@@ -12,6 +12,48 @@ const predictionRoutes = require('./routes/prediction');
 const licenseRoutes = require('./routes/license');
 const memoryDB = require('./memoryDB');
 
+// 確保資料庫存在
+const initDatabase = async () => {
+  try {
+    console.log('🔄 檢查並初始化資料庫...');
+    const fs = require('fs');
+    const dbDir = path.join(__dirname, '../database');
+    const dbPath = path.join(dbDir, 'baccarat_new.db');
+    
+    // 確保 database 目錄存在
+    if (!fs.existsSync(dbDir)) {
+      console.log('📁 創建 database 目錄...');
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+    
+    // 如果資料庫不存在，創建它
+    if (!fs.existsSync(dbPath)) {
+      console.log('📝 資料庫不存在，正在創建...');
+      const initScript = require('./newDatabase');
+      console.log('✅ 資料庫創建完成');
+    } else {
+      console.log('✅ 資料庫已存在');
+    }
+
+    // 測試資料庫連接
+    const db = require('./database');
+    await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
+        if (err) {
+          console.error('❌ 資料庫連接測試失敗:', err);
+          reject(err);
+        } else {
+          console.log('✅ 資料庫連接正常，用戶數量:', result.count);
+          resolve();
+        }
+      });
+    });
+  } catch (error) {
+    console.error('❌ 資料庫初始化失敗:', error);
+    // 不要中斷應用啟動，但記錄錯誤
+  }
+};
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || 'baccarat-secret-key-2024';
@@ -237,11 +279,16 @@ app.use((req, res) => {
   res.status(404).json({ error: '找不到頁面' });
 });
 
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`伺服器運行在埠 ${PORT}`);
-  console.log('內存資料庫已初始化');
-  console.log('預設帳號：admin/password 和 test/password');
-  console.log('部署成功！');
+const server = app.listen(PORT, '0.0.0.0', async () => {
+  console.log(`🚀 伺服器運行在埠 ${PORT}`);
+  
+  // 初始化資料庫
+  await initDatabase();
+  
+  console.log('✅ 應用啟動完成');
+  console.log('📱 內存資料庫已初始化');
+  console.log('🔑 預設帳號：admin/password 和 test/password');
+  console.log('🎉 部署成功！');
 });
 
 // 錯誤處理
