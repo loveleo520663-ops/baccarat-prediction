@@ -84,6 +84,16 @@ app.use('/api/admin', authenticateToken, authenticateAdmin, adminRoutes);
 app.use('/api/prediction', authenticateToken, predictionRoutes);
 app.use('/api/license', licenseRoutes);
 
+// 健康檢查路由
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // 主頁面路由
 app.get('/', (req, res) => {
   // 禁用快取
