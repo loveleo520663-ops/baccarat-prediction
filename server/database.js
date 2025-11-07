@@ -49,9 +49,23 @@ db = createConnection();
 // 提供重新連接的方法
 function reconnect() {
   console.log('🔄 重新連接資料庫...');
+  
+  // 關閉現有連接
   if (db) {
-    db.close();
+    try {
+      db.close();
+    } catch (err) {
+      console.warn('⚠️ 關閉資料庫連接時發生錯誤:', err.message);
+    }
   }
+  
+  // 檢查資料庫文件是否存在
+  if (!checkDatabaseExists()) {
+    console.error('❌ 重新連接失敗：資料庫文件不存在');
+    return null;
+  }
+  
+  // 創建新連接
   db = createConnection();
   return db;
 }
@@ -61,5 +75,12 @@ module.exports = {
   db: db,
   reconnect: reconnect,
   checkExists: checkDatabaseExists,
-  getDB: () => db
+  getDB: () => {
+    // 如果資料庫連接不存在，嘗試重新連接
+    if (!db && checkDatabaseExists()) {
+      console.log('🔄 資料庫連接不存在，嘗試重新連接...');
+      return createConnection();
+    }
+    return db;
+  }
 };

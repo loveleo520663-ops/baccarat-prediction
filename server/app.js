@@ -38,7 +38,14 @@ const initDatabase = async () => {
 
     // 測試資料庫連接和表是否存在
     const database = require('./database');
-    const db = database.getDB();
+    let db = database.getDB();
+    
+    // 檢查資料庫是否存在
+    if (!db) {
+      console.log('🔄 資料庫連接不存在，嘗試重新連接...');
+      db = database.reconnect();
+    }
+    
     await new Promise(async (resolve, reject) => {
       db.get('SELECT COUNT(*) as count FROM users', async (err, result) => {
         if (err) {
@@ -49,6 +56,10 @@ const initDatabase = async () => {
             const initDatabaseScript = require('./newDatabase');
             await initDatabaseScript();
             console.log('✅ 資料庫重新創建完成');
+            
+            // 重新連接資料庫
+            console.log('🔄 重新連接資料庫...');
+            db = database.reconnect();
             
             // 重新測試
             db.get('SELECT COUNT(*) as count FROM users', (err2, result2) => {
