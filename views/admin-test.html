@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>管理員登錄測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        .form-group { margin: 10px 0; }
+        input { padding: 8px; width: 200px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; }
+        .result { margin: 20px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>🔐 管理員登錄測試</h1>
+    
+    <div class="form-group">
+        <label>帳號:</label><br>
+        <input type="text" id="username" value="admin" placeholder="管理員帳號">
+    </div>
+    
+    <div class="form-group">
+        <label>密碼:</label><br>
+        <input type="password" id="password" value="admin123" placeholder="管理員密碼">
+    </div>
+    
+    <button onclick="testLogin()">🚀 測試登錄</button>
+    <button onclick="testAdminAPI()">📊 測試管理員 API</button>
+    
+    <div id="result" class="result" style="display:none;"></div>
+    
+    <script>
+        let authToken = localStorage.getItem('token');
+        
+        if (authToken) {
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').className = 'result success';
+            document.getElementById('result').innerHTML = '✅ 已有登錄令牌: ' + authToken.substring(0, 20) + '...';
+        }
+        
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    localStorage.setItem('token', authToken);
+                    
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '✅ 登錄成功！<br>令牌: ' + authToken.substring(0, 50) + '...<br>用戶: ' + JSON.stringify(data.user);
+                } else {
+                    throw new Error(data.error || '登錄失敗');
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ 登錄失敗: ' + error.message;
+            }
+        }
+        
+        async function testAdminAPI() {
+            const resultDiv = document.getElementById('result');
+            
+            if (!authToken) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ 請先登錄獲取令牌';
+                return;
+            }
+            
+            try {
+                // 測試用戶 API
+                const usersResponse = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
+                
+                const usersData = await usersResponse.json();
+                
+                // 測試統計 API
+                const statsResponse = await fetch('/api/admin/stats', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
+                
+                const statsData = await statsResponse.json();
+                
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '✅ 管理員 API 測試成功！<br><br>' +
+                    '<strong>用戶數據:</strong><br>' + JSON.stringify(usersData, null, 2) + '<br><br>' +
+                    '<strong>統計數據:</strong><br>' + JSON.stringify(statsData, null, 2);
+                    
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ 管理員 API 測試失敗: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
