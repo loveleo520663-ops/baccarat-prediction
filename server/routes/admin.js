@@ -1,5 +1,6 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const bcrypt = require('bcryptjs');
 const db = require('../database');
 
 const router = express.Router();
@@ -21,6 +22,7 @@ router.get('/users', (req, res) => {
 
     res.json({ success: true, users });
   });
+});
 
 // 創建用戶
 router.post('/users/create', async (req, res) => {
