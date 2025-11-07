@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const adminNewRoutes = require('./routes/admin-new');
 const predictionRoutes = require('./routes/prediction');
 const licenseRoutes = require('./routes/license');
 const memoryDB = require('./memoryDB');
@@ -155,6 +156,7 @@ const authenticateAdmin = (req, res, next) => {
 // 路由
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', authenticateToken, authenticateAdmin, adminRoutes);
+app.use('/api/admin-new', adminNewRoutes); // 新的管理路由，暫時不需要認證
 app.use('/api/prediction', authenticateToken, predictionRoutes);
 app.use('/api/license', licenseRoutes);
 
@@ -406,6 +408,15 @@ app.get('/admin-test', (req, res) => {
   res.setHeader('Expires', '0');
   res.setHeader('ETag', 'false');
   res.sendFile(path.join(__dirname, '../views/admin-test.html'));
+});
+
+// 新的管理後台
+app.get('/admin-new', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('ETag', 'false');
+  res.sendFile(path.join(__dirname, '../views/admin-new.html'));
 });
 
 app.get('/admin-diagnosis', (req, res) => {
