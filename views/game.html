@@ -479,7 +479,7 @@
             gap: 20px;
         }
 
-        .statistics-section, .trend-section, .stock-trend-section {
+        .statistics-section, .trend-section {
             background: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
             border: 3px solid #d4af37;
             border-radius: 15px;
@@ -531,7 +531,7 @@
         }
 
         .trend-chart {
-            height: 220px;
+            height: 250px;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
             border: 2px solid #d4af37;
             border-radius: 12px;
@@ -540,17 +540,7 @@
             box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
-        .stock-chart {
-            height: 180px;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-            border: 2px solid #00ff88;
-            border-radius: 12px;
-            padding: 15px;
-            position: relative;
-            box-shadow: inset 0 0 10px rgba(0, 255, 136, 0.2);
-        }
-
-        #trendCanvas, #stockCanvas {
+        #trendCanvas {
             width: 100%;
             height: 100%;
             border-radius: 8px;
@@ -783,13 +773,8 @@
             }
             
             .trend-chart {
-                height: 160px;
-                padding: 10px;
-            }
-
-            .stock-chart {
-                height: 140px;
-                padding: 10px;
+                height: 180px;
+                padding: 12px;
             }
             
             .stat-item {
@@ -843,11 +828,7 @@
             }
             
             .trend-chart {
-                height: 160px;
-            }
-
-            .stock-chart {
-                height: 130px;
+                height: 170px;
             }
         }
 
@@ -970,11 +951,7 @@
             }
             
             .trend-chart {
-                height: 140px;
-            }
-
-            .stock-chart {
-                height: 120px;
+                height: 150px;
             }
         }
 
@@ -1116,20 +1093,10 @@
             <!-- 趨勢圖表 -->
             <div class="trend-section">
                 <div class="section-title">
-                    <i class="fas fa-chart-line"></i> 趨勢圖表
+                    <i class="fas fa-chart-line"></i> 莊閒和趨勢圖表
                 </div>
                 <div class="trend-chart" id="trendChart">
-                    <canvas id="trendCanvas" width="300" height="180"></canvas>
-                </div>
-            </div>
-
-            <!-- 股票風格趨勢圖 -->
-            <div class="stock-trend-section">
-                <div class="section-title">
-                    <i class="fas fa-chart-area"></i> 股票風格走勢
-                </div>
-                <div class="stock-chart" id="stockChart">
-                    <canvas id="stockCanvas" width="300" height="150"></canvas>
+                    <canvas id="trendCanvas" width="300" height="200"></canvas>
                 </div>
             </div>
 
@@ -1445,12 +1412,11 @@
 
                 // 更新趨勢圖表
                 this.updateTrendChart();
-                this.updateStockChart();
             }
 
 
 
-            // 更新趨勢圖表
+            // 更新趨勢圖表 - 三條線分別顯示莊、閒、和的趨勢
             updateTrendChart() {
                 const canvas = document.getElementById('trendCanvas');
                 if (!canvas) return;
@@ -1462,235 +1428,182 @@
                 // 清空畫布
                 ctx.clearRect(0, 0, width, height);
                 
-                if (this.gameHistory.length < 2) {
-                    // 顯示等待數據的提示
-                    ctx.fillStyle = '#CCCCCC';
-                    ctx.font = '16px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('📊 趨勢圖表', width/2, height/2 - 20);
-                    ctx.font = '12px Arial';
-                    ctx.fillStyle = '#999999';
-                    ctx.fillText('記錄更多局數以顯示趨勢', width/2, height/2 + 5);
-                    return;
-                }
-
-                // 取最近20局數據
-                const recentGames = this.gameHistory.slice(-20);
-                const stepX = width / Math.max(recentGames.length - 1, 1);
-                
-                // 計算莊家勝率趨勢
-                let bankerWins = 0;
-                let totalGames = 0;
-                const trendPoints = [];
-
-                recentGames.forEach((game, index) => {
-                    if (game.result === 'banker') bankerWins++;
-                    if (game.result !== 'tie') totalGames++; // 排除和局
-                    
-                    if (totalGames > 0) {
-                        const bankerRate = bankerWins / totalGames;
-                        const y = height - (bankerRate * height);
-                        trendPoints.push({ 
-                            x: index * stepX, 
-                            y: y,
-                            rate: bankerRate 
-                        });
-                    }
-                });
-
-                if (trendPoints.length > 0) {
-                    // 繪製背景網格
-                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-                    ctx.lineWidth = 1;
-                    
-                    // 水平網格線 (25%, 50%, 75%)
-                    for (let i = 1; i <= 3; i++) {
-                        const y = (height / 4) * i;
-                        ctx.beginPath();
-                        ctx.moveTo(0, y);
-                        ctx.lineTo(width, y);
-                        ctx.stroke();
-                    }
-                    
-                    // 50%基準線加粗
-                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(0, height/2);
-                    ctx.lineTo(width, height/2);
-                    ctx.stroke();
-
-                    // 繪製趨勢線
-                    if (trendPoints.length > 1) {
-                        // 漸變色趨勢線
-                        const gradient = ctx.createLinearGradient(0, 0, width, 0);
-                        gradient.addColorStop(0, '#FF6B6B');
-                        gradient.addColorStop(0.5, '#4ECDC4');
-                        gradient.addColorStop(1, '#45B7D1');
-                        
-                        ctx.strokeStyle = gradient;
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.moveTo(trendPoints[0].x, trendPoints[0].y);
-                        
-                        for (let i = 1; i < trendPoints.length; i++) {
-                            ctx.lineTo(trendPoints[i].x, trendPoints[i].y);
-                        }
-                        ctx.stroke();
-
-                        // 繪製數據點
-                        trendPoints.forEach((point, index) => {
-                            ctx.fillStyle = point.rate > 0.5 ? '#DC143C' : '#1E90FF';
-                            ctx.beginPath();
-                            ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
-                            ctx.fill();
-                            
-                            // 邊框
-                            ctx.strokeStyle = '#FFFFFF';
-                            ctx.lineWidth = 2;
-                            ctx.stroke();
-                        });
-                    }
-
-                    // 添加標籤和數值
-                    ctx.fillStyle = '#CCCCCC';
-                    ctx.font = 'bold 12px Arial';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('莊家勝率趨勢', 10, 20);
-                    
-                    // 顯示當前勝率
-                    const currentRate = trendPoints[trendPoints.length - 1].rate;
-                    const percentage = Math.round(currentRate * 100);
-                    ctx.textAlign = 'right';
-                    ctx.fillStyle = currentRate > 0.5 ? '#DC143C' : '#1E90FF';
-                    ctx.font = 'bold 14px Arial';
-                    ctx.fillText(`${percentage}%`, width - 10, 20);
-                    
-                    // 百分比標籤
-                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-                    ctx.font = '10px Arial';
-                    ctx.textAlign = 'right';
-                    ctx.fillText('75%', width - 5, height * 0.25 + 3);
-                    ctx.fillText('50%', width - 5, height * 0.5 + 3);
-                    ctx.fillText('25%', width - 5, height * 0.75 + 3);
-                }
-            }
-
-            // 更新股票風格圖表
-            updateStockChart() {
-                const canvas = document.getElementById('stockCanvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                const width = canvas.width;
-                const height = canvas.height;
-                
-                // 清空畫布
-                ctx.clearRect(0, 0, width, height);
-                
                 if (this.gameHistory.length < 3) {
                     // 顯示等待數據的提示
-                    ctx.fillStyle = '#00ff88';
-                    ctx.font = '16px Arial';
+                    ctx.fillStyle = '#d4af37';
+                    ctx.font = 'bold 18px Arial';
                     ctx.textAlign = 'center';
-                    ctx.fillText('📈 股票走勢', width/2, height/2 - 20);
-                    ctx.font = '12px Arial';
-                    ctx.fillStyle = '#66ffaa';
-                    ctx.fillText('需要更多數據來顯示K線圖', width/2, height/2 + 5);
+                    ctx.fillText('📊 莊閒和趨勢圖表', width/2, height/2 - 25);
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#999999';
+                    ctx.fillText('需要更多遊戲記錄以顯示趨勢', width/2, height/2 + 5);
                     return;
                 }
 
-                // 取最近15局數據作為K線
+                // 取最近15局數據以獲得更清晰的趨勢
                 const recentGames = this.gameHistory.slice(-15);
-                const candleWidth = (width - 40) / recentGames.length;
-                const padding = 20;
+                const stepX = (width - 80) / Math.max(recentGames.length - 1, 1);
+                const padding = 40;
                 
-                // 計算價格範圍（以莊家勝率為基礎）
-                let prices = [];
-                let bankerWins = 0;
-                let totalNonTie = 0;
-                
+                // 計算三種結果的累計統計
+                let bankerCount = 0, playerCount = 0, tieCount = 0;
+                const bankerPoints = [], playerPoints = [], tiePoints = [];
+
                 recentGames.forEach((game, index) => {
-                    if (game.result === 'banker') bankerWins++;
-                    if (game.result !== 'tie') totalNonTie++;
+                    if (game.result === 'banker') bankerCount++;
+                    else if (game.result === 'player') playerCount++;
+                    else if (game.result === 'tie') tieCount++;
                     
-                    if (totalNonTie > 0) {
-                        const rate = bankerWins / totalNonTie;
-                        prices.push({
-                            open: index === 0 ? 0.5 : prices[index-1]?.close || 0.5,
-                            close: rate,
-                            high: Math.max(rate + Math.random() * 0.1, rate),
-                            low: Math.min(rate - Math.random() * 0.1, rate),
-                            isGreen: rate > (prices[index-1]?.close || 0.5)
-                        });
-                    }
+                    const total = index + 1;
+                    const bankerRate = bankerCount / total;
+                    const playerRate = playerCount / total;
+                    const tieRate = tieCount / total;
+                    
+                    const x = padding + index * stepX;
+                    bankerPoints.push({ 
+                        x: x, 
+                        y: height - padding - (bankerRate * (height - 80)),
+                        rate: bankerRate 
+                    });
+                    playerPoints.push({ 
+                        x: x, 
+                        y: height - padding - (playerRate * (height - 80)),
+                        rate: playerRate 
+                    });
+                    tiePoints.push({ 
+                        x: x, 
+                        y: height - padding - (tieRate * (height - 80)),
+                        rate: tieRate 
+                    });
                 });
 
-                if (prices.length === 0) return;
-
-                const minPrice = Math.min(...prices.map(p => Math.min(p.low, p.open, p.close, p.high)));
-                const maxPrice = Math.max(...prices.map(p => Math.max(p.high, p.open, p.close, p.low)));
-                const priceRange = Math.max(maxPrice - minPrice, 0.1);
-
                 // 繪製背景網格
-                ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+                ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)';
                 ctx.lineWidth = 1;
+                
+                // 水平網格線
                 for (let i = 1; i <= 4; i++) {
-                    const y = (height / 5) * i;
+                    const y = padding + ((height - 80) / 5) * i;
                     ctx.beginPath();
                     ctx.moveTo(padding, y);
                     ctx.lineTo(width - padding, y);
                     ctx.stroke();
                 }
-
-                // 繪製K線圖
-                prices.forEach((price, index) => {
-                    const x = padding + index * candleWidth + candleWidth / 2;
-                    const openY = height - padding - ((price.open - minPrice) / priceRange) * (height - 2 * padding);
-                    const closeY = height - padding - ((price.close - minPrice) / priceRange) * (height - 2 * padding);
-                    const highY = height - padding - ((price.high - minPrice) / priceRange) * (height - 2 * padding);
-                    const lowY = height - padding - ((price.low - minPrice) / priceRange) * (height - 2 * padding);
-                    
-                    const isGreen = price.close > price.open;
-                    const color = isGreen ? '#00ff88' : '#ff4444';
-                    
-                    // 上下影線
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(x, highY);
-                    ctx.lineTo(x, lowY);
-                    ctx.stroke();
-                    
-                    // K線體
-                    ctx.fillStyle = isGreen ? color : color;
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 1;
-                    
-                    const bodyWidth = candleWidth * 0.6;
-                    const bodyHeight = Math.abs(closeY - openY);
-                    const bodyY = Math.min(closeY, openY);
-                    
-                    if (isGreen) {
-                        ctx.fillRect(x - bodyWidth/2, bodyY, bodyWidth, bodyHeight);
-                    } else {
-                        ctx.strokeRect(x - bodyWidth/2, bodyY, bodyWidth, bodyHeight);
-                    }
-                });
-
-                // 添加標題和當前價格
-                ctx.fillStyle = '#00ff88';
-                ctx.font = 'bold 12px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText('莊家勝率K線圖', 10, 20);
                 
-                const currentPrice = prices[prices.length - 1]?.close || 0.5;
-                const currentColor = prices[prices.length - 1]?.isGreen ? '#00ff88' : '#ff4444';
-                ctx.fillStyle = currentColor;
-                ctx.textAlign = 'right';
-                ctx.font = 'bold 14px Arial';
-                ctx.fillText((currentPrice * 100).toFixed(1) + '%', width - 10, 20);
+                // 垂直網格線
+                for (let i = 1; i < recentGames.length; i += 2) {
+                    const x = padding + i * stepX;
+                    ctx.beginPath();
+                    ctx.moveTo(x, padding);
+                    ctx.lineTo(x, height - padding);
+                    ctx.stroke();
+                }
+
+                // 繪製三條趨勢線
+                if (bankerPoints.length > 1) {
+                    // 莊家趨勢線 - 紅色
+                    ctx.strokeStyle = '#DC143C';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(bankerPoints[0].x, bankerPoints[0].y);
+                    for (let i = 1; i < bankerPoints.length; i++) {
+                        ctx.lineTo(bankerPoints[i].x, bankerPoints[i].y);
+                    }
+                    ctx.stroke();
+
+                    // 閒家趨勢線 - 藍色
+                    ctx.strokeStyle = '#1E90FF';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(playerPoints[0].x, playerPoints[0].y);
+                    for (let i = 1; i < playerPoints.length; i++) {
+                        ctx.lineTo(playerPoints[i].x, playerPoints[i].y);
+                    }
+                    ctx.stroke();
+
+                    // 和局趨勢線 - 綠色
+                    ctx.strokeStyle = '#228B22';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(tiePoints[0].x, tiePoints[0].y);
+                    for (let i = 1; i < tiePoints.length; i++) {
+                        ctx.lineTo(tiePoints[i].x, tiePoints[i].y);
+                    }
+                    ctx.stroke();
+
+                    // 繪製數據點
+                    bankerPoints.forEach(point => {
+                        ctx.fillStyle = '#DC143C';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                    
+                    playerPoints.forEach(point => {
+                        ctx.fillStyle = '#1E90FF';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                    
+                    tiePoints.forEach(point => {
+                        ctx.fillStyle = '#228B22';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                }
+
+                // 添加圖例
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'left';
+                
+                // 莊家圖例
+                ctx.fillStyle = '#DC143C';
+                ctx.fillRect(10, 15, 15, 3);
+                ctx.fillText('莊', 30, 25);
+                
+                // 閒家圖例  
+                ctx.fillStyle = '#1E90FF';
+                ctx.fillRect(70, 15, 15, 3);
+                ctx.fillText('閒', 90, 25);
+                
+                // 和局圖例
+                ctx.fillStyle = '#228B22';
+                ctx.fillRect(130, 15, 15, 3);
+                ctx.fillText('和', 150, 25);
+
+                // 顯示當前百分比
+                if (bankerPoints.length > 0) {
+                    const latestBanker = bankerPoints[bankerPoints.length - 1].rate;
+                    const latestPlayer = playerPoints[playerPoints.length - 1].rate;
+                    const latestTie = tiePoints[tiePoints.length - 1].rate;
+                    
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'right';
+                    
+                    ctx.fillStyle = '#DC143C';
+                    ctx.fillText(`${Math.round(latestBanker * 100)}%`, width - 10, 25);
+                    
+                    ctx.fillStyle = '#1E90FF';
+                    ctx.fillText(`${Math.round(latestPlayer * 100)}%`, width - 10, 45);
+                    
+                    ctx.fillStyle = '#228B22';
+                    ctx.fillText(`${Math.round(latestTie * 100)}%`, width - 10, 65);
+                }
+
+                // Y軸百分比標籤
+                ctx.fillStyle = 'rgba(212, 175, 55, 0.8)';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('100%', 5, padding - 5);
+                ctx.fillText('75%', 5, padding + (height - 80) * 0.25 + 5);
+                ctx.fillText('50%', 5, padding + (height - 80) * 0.5 + 5);
+                ctx.fillText('25%', 5, padding + (height - 80) * 0.75 + 5);
+                ctx.fillText('0%', 5, height - padding + 15);
             }
+
+
 
             // 生成預測建議
             generatePrediction() {
@@ -1939,7 +1852,6 @@
                 canvas.addEventListener('click', function() {
                     if (game) {
                         game.updateTrendChart();
-                        game.updateStockChart();
                     }
                 });
             }
@@ -1957,7 +1869,6 @@
             // 重新繪製圖表
             if (game) {
                 game.updateTrendChart();
-                game.updateStockChart();
             }
         }
     </script>
