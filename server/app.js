@@ -166,15 +166,17 @@ app.use((req, res) => {
   res.status(404).json({ error: '找不到頁面' });
 });
 
-app.listen(PORT, '0.0.0.0', (err) => {
-  if (err) {
-    console.error('伺服器啟動失敗:', err);
-    return;
-  }
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`伺服器運行在埠 ${PORT}`);
   console.log('內存資料庫已初始化');
   console.log('預設帳號：admin/password 和 test/password');
   console.log('部署成功！');
+});
+
+// 錯誤處理
+server.on('error', (err) => {
+  console.error('伺服器啟動失敗:', err);
+  process.exit(1);
 });
 
 module.exports = app;
