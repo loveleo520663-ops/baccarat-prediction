@@ -94,6 +94,59 @@ app.get('/health', (req, res) => {
   });
 });
 
+// 測試路由（無需認證）- 用於診斷
+app.get('/test/admin/users', (req, res) => {
+  const db = require('./database');
+  console.log('🧪 測試用戶 API 被調用');
+  
+  db.all(`
+    SELECT id, username, duration_days, expiration_date, is_active, created_at
+    FROM users 
+    ORDER BY created_at DESC
+  `, (err, users) => {
+    if (err) {
+      console.error('❌ 測試獲取用戶錯誤:', err);
+      return res.status(500).json({ error: '獲取用戶失敗', details: err.message });
+    }
+    console.log('✅ 測試用戶 API 成功，用戶數量:', users.length);
+    res.json({ success: true, users });
+  });
+});
+
+app.get('/test/admin/stats', (req, res) => {
+  const db = require('./database');
+  console.log('🧪 測試統計 API 被調用');
+  
+  db.serialize(() => {
+    let stats = {};
+    db.get('SELECT COUNT(*) as total FROM users', (err, result) => {
+      if (err) {
+        console.error('❌ 測試統計錯誤:', err);
+        return res.status(500).json({ error: '獲取統計失敗', details: err.message });
+      }
+      stats.totalUsers = result.total;
+
+      db.get('SELECT COUNT(*) as active FROM users WHERE is_active = 1', (err, result) => {
+        if (err) {
+          console.error('❌ 測試統計錯誤:', err);
+          return res.status(500).json({ error: '獲取統計失敗', details: err.message });
+        }
+        stats.activeUsers = result.active;
+
+        db.get('SELECT COUNT(*) as expired FROM users WHERE datetime(expiration_date) < datetime("now")', (err, result) => {
+          if (err) {
+            console.error('❌ 測試統計錯誤:', err);
+            return res.status(500).json({ error: '獲取統計失敗', details: err.message });
+          }
+          stats.expiredUsers = result.expired;
+          console.log('✅ 測試統計 API 成功:', stats);
+          res.json({ success: true, stats });
+        });
+      });
+    });
+  });
+});
+
 // 主頁面路由
 app.get('/', (req, res) => {
   // 禁用快取
