@@ -13,8 +13,26 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- 版本標記：v2.4 - 手機版格子優化 2024-11-07 -->
     <title>百家樂預測系統 v2.4 - 遊戲大廳</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
+        /* Font Awesome 圖標確保顯示 */
+        .fas, .fa-solid {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+            font-variant: normal !important;
+            text-transform: none !important;
+            line-height: 1 !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        /* 確保圖標正確顯示 */
+        i[class^="fa-"], i[class*=" fa-"] {
+            display: inline-block !important;
+            font-style: normal !important;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -1267,7 +1285,7 @@
                 <i class="fas fa-cog"></i> 後台管理
             </button>
             <button id="logoutBtn" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
+                <i class="fas fa-right-from-bracket"></i> 登出
             </button>
         </div>
     </nav>
