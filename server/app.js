@@ -487,6 +487,14 @@ app.get('/quick-test', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/quick-test.html'));
 });
 
+app.get('/login-debug', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('ETag', 'false');
+  res.sendFile(path.join(__dirname, '../views/login-test-debug.html'));
+});
+
 app.get('/emergency-fix', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');

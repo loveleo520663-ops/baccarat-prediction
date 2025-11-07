@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入測試</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        
+        .test-container {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .user-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; color: #333; margin-bottom: 30px;">🔐 登入測試工具</h1>
+        
+        <div class="user-info">
+            <h3>📋 測試帳號資訊</h3>
+            <p><strong>管理員：</strong> admin / password</p>
+            <p><strong>測試用戶：</strong> test001 / test123</p>
+        </div>
+        
+        <!-- 快速測試按鈕 -->
+        <div class="test-section">
+            <div class="test-title">⚡ 快速測試</div>
+            <button class="btn btn-success" onclick="testAdminLogin()">測試 Admin 登入</button>
+            <button class="btn btn-primary" onclick="testUserLogin()">測試 User 登入</button>
+            <button class="btn btn-warning" onclick="resetPassword()">重設 Admin 密碼</button>
+            <div id="quickResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 手動登入測試 -->
+        <div class="test-section">
+            <div class="test-title">🔧 手動登入測試</div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">用戶名</label>
+                    <input type="text" class="form-input" id="username" value="admin">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密碼</label>
+                    <input type="password" class="form-input" id="password" value="password">
+                </div>
+                <button type="submit" class="btn btn-primary">登入測試</button>
+            </form>
+            <div id="loginResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 資料庫用戶查詢 -->
+        <div class="test-section">
+            <div class="test-title">👥 資料庫用戶查詢</div>
+            <button class="btn btn-primary" onclick="checkUsers()">查看所有用戶</button>
+            <div id="usersResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 系統狀態檢查 -->
+        <div class="test-section">
+            <div class="test-title">🏥 系統狀態</div>
+            <button class="btn btn-primary" onclick="checkHealth()">健康檢查</button>
+            <div id="healthResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // 快速測試 Admin 登入
+        async function testAdminLogin() {
+            showResult('quickResult', '測試中...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'password'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('quickResult', `✅ Admin 登入成功！角色: ${result.role}`, 'success');
+                    localStorage.setItem('adminToken', result.token);
+                } else {
+                    showResult('quickResult', `❌ Admin 登入失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('quickResult', `❌ 連接錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        // 快速測試 User 登入
+        async function testUserLogin() {
+            showResult('quickResult', '測試中...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'test001',
+                        password: 'test123'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('quickResult', `✅ 用戶登入成功！角色: ${result.role}`, 'success');
+                } else {
+                    showResult('quickResult', `❌ 用戶登入失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('quickResult', `❌ 連接錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        // 重設密碼
+        async function resetPassword() {
+            showResult('quickResult', '重設密碼中...', 'info');
+            
+            try {
+                const response = await fetch('/reset-admin-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('quickResult', `✅ 密碼重設成功: ${result.message}`, 'success');
+                } else {
+                    showResult('quickResult', `❌ 密碼重設失敗: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('quickResult', `❌ 重設錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        // 手動登入測試
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            showResult('loginResult', '登入中...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('loginResult', `✅ 登入成功！
+                        用戶: ${result.username}
+                        角色: ${result.role}
+                        Token: ${result.token.substring(0, 20)}...`, 'success');
+                        
+                    localStorage.setItem('adminToken', result.token);
+                } else {
+                    showResult('loginResult', `❌ 登入失敗: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('loginResult', `❌ 連接錯誤: ${error.message}`, 'error');
+            }
+        });
+        
+        // 查看用戶
+        async function checkUsers() {
+            showResult('usersResult', '查詢中...', 'info');
+            
+            try {
+                const response = await fetch('/test/admin/users');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    let userList = '📊 用戶列表:\n\n';
+                    result.users.forEach(user => {
+                        userList += `👤 ${user.username} - ${user.is_active ? '啟用' : '停用'}\n`;
+                    });
+                    showResult('usersResult', userList, 'success');
+                } else {
+                    showResult('usersResult', `❌ 查詢失敗: ${result.message || '未知錯誤'}`, 'error');
+                }
+            } catch (error) {
+                showResult('usersResult', `❌ 查詢錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        // 健康檢查
+        async function checkHealth() {
+            showResult('healthResult', '檢查中...', 'info');
+            
+            try {
+                const response = await fetch('/health');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('healthResult', `✅ 系統正常
+                        狀態: ${result.status}
+                        資料庫: ${result.database.status}
+                        環境: ${result.environment}`, 'success');
+                } else {
+                    showResult('healthResult', `❌ 系統異常: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('healthResult', `❌ 檢查失敗: ${error.message}`, 'error');
+            }
+        }
+        
+        // 顯示結果
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+        
+        // 頁面載入時自動檢查
+        window.addEventListener('load', function() {
+            checkHealth();
+        });
+    </script>
+</body>
+</html>
