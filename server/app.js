@@ -237,6 +237,58 @@ app.post('/force-rebuild-db', async (req, res) => {
   }
 });
 
+// 重設管理員密碼（緊急使用）
+app.post('/reset-admin-password', async (req, res) => {
+  try {
+    console.log('🔧 收到管理員密碼重設請求');
+    
+    const database = require('./database');
+    const bcrypt = require('bcryptjs');
+    const db = database.getDB();
+    
+    if (!db) {
+      return res.status(500).json({
+        success: false,
+        message: '資料庫連接失敗'
+      });
+    }
+    
+    // 加密新密碼 "password"
+    const hashedPassword = await bcrypt.hash('password', 10);
+    console.log('🔐 正在重設 admin 密碼...');
+    
+    db.run(`
+      UPDATE users 
+      SET password = ? 
+      WHERE username = 'admin'
+    `, [hashedPassword], function(err) {
+      if (err) {
+        console.error('❌ 重設密碼失敗:', err);
+        return res.status(500).json({
+          success: false,
+          message: '重設密碼失敗',
+          error: err.message
+        });
+      }
+      
+      console.log('✅ admin 密碼已重設');
+      res.json({
+        success: true,
+        message: 'admin 密碼已重設為: password',
+        timestamp: new Date().toISOString()
+      });
+    });
+    
+  } catch (error) {
+    console.error('❌ 密碼重設過程中發生錯誤:', error);
+    res.status(500).json({
+      success: false,
+      message: '密碼重設失敗',
+      error: error.message
+    });
+  }
+});
+
 // 測試認證路由的資料庫連接
 app.get('/test-auth-db', (req, res) => {
   const database = require('./database');
