@@ -1,8 +1,16 @@
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
 
 const dbPath = path.join(__dirname, '../database/baccarat.db');
+
+// 刪除舊資料庫重新開始
+if (fs.existsSync(dbPath)) {
+  fs.unlinkSync(dbPath);
+  console.log('🗑️ 已刪除舊資料庫');
+}
+
 const db = new sqlite3.Database(dbPath);
 
 // 建立資料表

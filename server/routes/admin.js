@@ -1,57 +1,37 @@
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
-
-// 記憶體儲存 - 替代資料庫
-let users = [
-  {
-    id: 1,
-    username: 'admin',
-    password_hash: '$2a$10$X8rM9QJ1YxK2Ln3w4F5vLOyH3mZ8Nq7P5k2X9Rt6Sw4A1Bv8Cy0De', // password: admin123
-    role: 'admin',
-    is_active: 1,
-    created_at: new Date().toISOString(),
-    expiration_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1年後到期
-  }
-];
-
-let licenseKeys = [];
-let nextUserId = 2;
-let nextLicenseId = 1;
+const db = require('../database');
 
 const router = express.Router();
 
 // 獲取所有用戶
 router.get('/users', (req, res) => {
-  try {
-    // 過濾掉密碼哈希，返回安全的用戶資料
-    const safeUsers = users.map(user => ({
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      is_active: user.is_active,
-      created_at: user.created_at,
-      expiration_date: user.expiration_date
-    }));
+  db.all(`
+    SELECT id, username, duration_days, expiration_date, is_active, created_at
+    FROM users 
+    ORDER BY created_at DESC
+  `, (err, users) => {
+    if (err) {
+      console.error('獲取用戶錯誤:', err);
+      return res.status(500).json({ error: '獲取用戶失敗' });
+    }
 
-    res.json({ success: true, users: safeUsers });
-  } catch (error) {
-    console.error('獲取用戶錯誤:', error);
-    res.status(500).json({ error: '獲取用戶失敗' });
-  }
+    res.json({ success: true, users });
+  });
 });
 
-// 創建用戶
+// 創建用戶 (合併註冊和金鑰功能)
 router.post('/users/create', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, durationDays } = req.body;
 
   // 驗證輸入
-  if (!username || !password) {
+  if (!username || !password || !durationDays) {
     return res.status(400).json({ 
-      error: '帳號和密碼都是必填的',
+      error: '帳號、密碼和有效期都是必填的',
       details: {
         username: !username ? '帳號是必填的' : null,
-        password: !password ? '密碼是必填的' : null
+        password: !password ? '密碼是必填的' : null,
+        durationDays: !durationDays ? '有效期是必填的' : null
       }
     });
   }
@@ -66,175 +46,148 @@ router.post('/users/create', async (req, res) => {
     return res.status(400).json({ error: '密碼至少需要 6 個字符' });
   }
 
+  // 驗證有效期選項
+  const validDurations = [1, 7, 30, 365, -1]; // -1 表示永久
+  if (!validDurations.includes(parseInt(durationDays))) {
+    return res.status(400).json({ error: '無效的有效期選項' });
+  }
+
   try {
     // 檢查用戶名是否已存在
-    const existingUser = users.find(user => user.username === username);
-    
-    if (existingUser) {
-      return res.status(409).json({ error: '帳號已存在' });
-    }
+    db.get('SELECT id FROM users WHERE username = ?', [username], async (err, existingUser) => {
+      if (err) {
+        console.error('檢查用戶錯誤:', err);
+        return res.status(500).json({ error: '檢查用戶時發生錯誤' });
+      }
 
-    // 加密密碼
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+      if (existingUser) {
+        return res.status(409).json({ error: '帳號已存在' });
+      }
 
-    // 設置默認到期日期 (30天)
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + 30);
+      try {
+        // 加密密碼
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 創建新用戶
-    const newUser = {
-      id: nextUserId++,
-      username: username,
-      password_hash: hashedPassword,
-      role: 'user',
-      is_active: 1,
-      created_at: new Date().toISOString(),
-      expiration_date: expirationDate.toISOString()
-    };
+        // 計算到期日期
+        let expirationDate;
+        if (parseInt(durationDays) === -1) {
+          // 永久帳號設置為 100 年後
+          expirationDate = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
+        } else {
+          expirationDate = new Date(Date.now() + parseInt(durationDays) * 24 * 60 * 60 * 1000);
+        }
 
-    // 添加到記憶體儲存
-    users.push(newUser);
+        // 創建用戶
+        db.run(`
+          INSERT INTO users (username, password, duration_days, expiration_date)
+          VALUES (?, ?, ?, ?)
+        `, [username, hashedPassword, parseInt(durationDays), expirationDate.toISOString()], function(err) {
+          if (err) {
+            console.error('創建用戶錯誤:', err);
+            return res.status(500).json({ error: '創建用戶失敗' });
+          }
 
-    // 返回安全的用戶資料（不包含密碼哈希）
-    const safeUser = {
-      id: newUser.id,
-      username: newUser.username,
-      role: newUser.role,
-      is_active: newUser.is_active,
-      created_at: newUser.created_at,
-      expiration_date: newUser.expiration_date
-    };
+          // 獲取創建的用戶資訊
+          db.get(`
+            SELECT id, username, duration_days, expiration_date, is_active, created_at
+            FROM users WHERE id = ?
+          `, [this.lastID], (err, user) => {
+            if (err) {
+              console.error('獲取用戶資訊錯誤:', err);
+              return res.status(500).json({ error: '獲取用戶資訊失敗' });
+            }
 
-    res.status(201).json({
-      success: true,
-      message: '用戶創建成功',
-      user: safeUser
+            res.status(201).json({
+              success: true,
+              message: '用戶創建成功',
+              user: user
+            });
+          });
+        });
+
+      } catch (hashError) {
+        console.error('密碼加密錯誤:', hashError);
+        res.status(500).json({ error: '密碼加密失敗' });
+      }
     });
 
   } catch (error) {
-    console.error('創建用戶錯誤:', error);
-    res.status(500).json({ 
-      error: '創建用戶失敗',
-      details: error.message 
-    });
+    console.error('創建用戶過程錯誤:', error);
+    res.status(500).json({ error: '創建用戶失敗' });
   }
 });
 
-// 建立許可證金鑰
-router.post('/license/generate', (req, res) => {
-  const { count = 1, durationDays = 30 } = req.body;
-
-  if (count > 100) {
-    return res.status(400).json({ error: '一次最多只能生成 100 個金鑰' });
-  }
-
-  try {
-    const generatedKeys = [];
-    
-    for (let i = 0; i < count; i++) {
-      const keyCode = `BAC-${uuidv4().substr(0, 8).toUpperCase()}-${Date.now().toString().substr(-4)}`;
-      
-      const newKey = {
-        id: nextLicenseId++,
-        key_code: keyCode,
-        duration_days: durationDays,
-        is_used: 0,
-        used_by: null,
-        created_at: new Date().toISOString(),
-        used_at: null
-      };
-
-      licenseKeys.push(newKey);
-      generatedKeys.push({
-        key_code: keyCode,
-        duration_days: durationDays
-      });
-    }
-
-    res.json({
-      success: true,
-      message: `成功生成 ${count} 個許可證金鑰`,
-      keys: generatedKeys
-    });
-
-  } catch (error) {
-    console.error('生成金鑰錯誤:', error);
-    res.status(500).json({ error: '生成金鑰失敗' });
-  }
+// 生成隨機帳號
+router.get('/generate/username', (req, res) => {
+  const adjectives = ['Lucky', 'Smart', 'Fast', 'Cool', 'Pro', 'Elite', 'Super', 'Mega', 'Ultra', 'Prime'];
+  const nouns = ['Player', 'Gamer', 'User', 'Winner', 'Master', 'King', 'Queen', 'Star', 'Hero', 'Legend'];
+  const numbers = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
+  
+  const username = `${adjective}${noun}${numbers}`;
+  
+  res.json({ success: true, username });
 });
 
-// 獲取許可證金鑰列表
-router.get('/license/keys', (req, res) => {
-  try {
-    const { page = 1, limit = 50 } = req.query;
-    const offset = (page - 1) * limit;
-    
-    // 獲取總數
-    const total = licenseKeys.length;
-    
-    // 獲取分頁數據
-    const keysWithUsernames = licenseKeys
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(offset, offset + parseInt(limit))
-      .map(key => {
-        const usedByUser = users.find(user => user.id === key.used_by);
-        return {
-          ...key,
-          used_by_username: usedByUser ? usedByUser.username : null
-        };
-      });
-
-    res.json({
-      success: true,
-      keys: keysWithUsernames,
-      total: total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / limit)
-    });
-
-  } catch (error) {
-    console.error('獲取金鑰錯誤:', error);
-    res.status(500).json({ error: '獲取金鑰失敗' });
+// 生成隨機密碼
+router.get('/generate/password', (req, res) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let password = '';
+  
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+  
+  res.json({ success: true, password });
 });
 
 // 禁用/啟用用戶
 router.put('/users/:id/toggle', (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    const user = users.find(u => u.id === userId);
+  const userId = parseInt(req.params.id);
+
+  db.get('SELECT is_active FROM users WHERE id = ?', [userId], (err, user) => {
+    if (err) {
+      console.error('查詢用戶錯誤:', err);
+      return res.status(500).json({ error: '查詢用戶失敗' });
+    }
 
     if (!user) {
       return res.status(404).json({ error: '用戶不存在' });
     }
 
-    // 切換狀態
-    user.is_active = user.is_active ? 0 : 1;
+    const newStatus = user.is_active ? 0 : 1;
 
-    res.json({
-      success: true,
-      message: `用戶已${user.is_active ? '啟用' : '禁用'}`,
-      is_active: user.is_active
+    db.run('UPDATE users SET is_active = ? WHERE id = ?', [newStatus, userId], (err) => {
+      if (err) {
+        console.error('更新用戶狀態錯誤:', err);
+        return res.status(500).json({ error: '更新用戶狀態失敗' });
+      }
+
+      res.json({
+        success: true,
+        message: `用戶已${newStatus ? '啟用' : '禁用'}`,
+        is_active: newStatus
+      });
     });
-
-  } catch (error) {
-    console.error('更新用戶狀態錯誤:', error);
-    res.status(500).json({ error: '更新用戶狀態失敗' });
-  }
+  });
 });
 
 // 延長用戶許可證
-router.put('/users/:id/extend-license', (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    const { days } = req.body;
+router.put('/users/:id/extend', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const { days } = req.body;
 
-    if (!days || days <= 0) {
-      return res.status(400).json({ error: '請輸入有效的延長天數' });
+  if (!days || days <= 0) {
+    return res.status(400).json({ error: '請輸入有效的延長天數' });
+  }
+
+  db.get('SELECT expiration_date FROM users WHERE id = ?', [userId], (err, user) => {
+    if (err) {
+      console.error('查詢用戶錯誤:', err);
+      return res.status(500).json({ error: '查詢用戶失敗' });
     }
-
-    const user = users.find(u => u.id === userId);
 
     if (!user) {
       return res.status(404).json({ error: '用戶不存在' });
@@ -247,66 +200,76 @@ router.put('/users/:id/extend-license', (req, res) => {
     }
     
     currentExpiry.setDate(currentExpiry.getDate() + parseInt(days));
-    user.expiration_date = currentExpiry.toISOString();
 
-    res.json({
-      success: true,
-      message: `許可證已延長 ${days} 天`,
-      new_expiry: currentExpiry.toISOString()
+    db.run('UPDATE users SET expiration_date = ? WHERE id = ?', [currentExpiry.toISOString(), userId], (err) => {
+      if (err) {
+        console.error('延長許可證錯誤:', err);
+        return res.status(500).json({ error: '延長許可證失敗' });
+      }
+
+      res.json({
+        success: true,
+        message: `許可證已延長 ${days} 天`,
+        new_expiry: currentExpiry.toISOString()
+      });
     });
-
-  } catch (error) {
-    console.error('延長許可證錯誤:', error);
-    res.status(500).json({ error: '延長許可證失敗' });
-  }
+  });
 });
 
 // 獲取系統統計
 router.get('/stats', (req, res) => {
-  try {
-    const stats = {
-      totalUsers: users.filter(u => u.role === 'user').length,
-      activeUsers: users.filter(u => u.role === 'user' && u.is_active === 1).length,
-      totalLicenseKeys: licenseKeys.length,
-      usedLicenseKeys: licenseKeys.filter(k => k.is_used === 1).length,
-      totalPredictions: 0, // 暫時設為 0，因為沒有預測資料
-      correctPredictions: 0,
-      accuracyRate: 0
-    };
+  db.serialize(() => {
+    let stats = {};
 
-    res.json({ success: true, stats });
+    db.get('SELECT COUNT(*) as total FROM users', (err, result) => {
+      if (err) {
+        console.error('統計錯誤:', err);
+        return res.status(500).json({ error: '獲取統計失敗' });
+      }
+      stats.totalUsers = result.total;
 
-  } catch (error) {
-    console.error('獲取統計錯誤:', error);
-    res.status(500).json({ error: '獲取統計失敗' });
-  }
+      db.get('SELECT COUNT(*) as active FROM users WHERE is_active = 1', (err, result) => {
+        if (err) {
+          console.error('統計錯誤:', err);
+          return res.status(500).json({ error: '獲取統計失敗' });
+        }
+        stats.activeUsers = result.active;
+
+        db.get('SELECT COUNT(*) as expired FROM users WHERE datetime(expiration_date) < datetime("now")', (err, result) => {
+          if (err) {
+            console.error('統計錯誤:', err);
+            return res.status(500).json({ error: '獲取統計失敗' });
+          }
+          stats.expiredUsers = result.expired;
+
+          res.json({ success: true, stats });
+        });
+      });
+    });
+  });
 });
 
-// 刪除許可證金鑰
-router.delete('/license/:id', (req, res) => {
-  try {
-    const keyId = parseInt(req.params.id);
-    const keyIndex = licenseKeys.findIndex(k => k.id === keyId);
+// 刪除用戶
+router.delete('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id);
 
-    if (keyIndex === -1) {
-      return res.status(404).json({ error: '許可證金鑰不存在' });
-    }
-
-    const key = licenseKeys[keyIndex];
-
-    if (key.is_used) {
-      return res.status(400).json({ error: '無法刪除已使用的許可證金鑰' });
-    }
-
-    // 從陣列中移除
-    licenseKeys.splice(keyIndex, 1);
-
-    res.json({ success: true, message: '許可證金鑰已刪除' });
-
-  } catch (error) {
-    console.error('刪除金鑰錯誤:', error);
-    res.status(500).json({ error: '刪除許可證金鑰失敗' });
+  // 不允許刪除管理員帳號
+  if (userId === 1) {
+    return res.status(403).json({ error: '無法刪除管理員帳號' });
   }
+
+  db.run('DELETE FROM users WHERE id = ?', [userId], function(err) {
+    if (err) {
+      console.error('刪除用戶錯誤:', err);
+      return res.status(500).json({ error: '刪除用戶失敗' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: '用戶不存在' });
+    }
+
+    res.json({ success: true, message: '用戶已刪除' });
+  });
 });
 
 module.exports = router;

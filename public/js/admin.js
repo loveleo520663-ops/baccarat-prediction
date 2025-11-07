@@ -726,41 +726,30 @@ class UserCreator {
         const formData = new FormData(this.form);
         const userData = {
             username: formData.get('username').trim(),
-            email: formData.get('email').trim(),
             password: formData.get('password'),
-            licenseKey: formData.get('licenseKey')
+            durationDays: parseInt(formData.get('durationDays'))
         };
 
-        // 驗證所有欄位
-        let isValid = true;
-        const inputs = this.form.querySelectorAll('input[required], select[required]');
-        
-        inputs.forEach(input => {
-            if (!this.validateField(input)) {
-                isValid = false;
-            }
-        });
-
-        // 驗證密碼確認
-        const password = this.form.querySelector('#password').value;
-        const confirmPassword = this.form.querySelector('#confirmPassword').value;
-        if (!this.validatePasswordMatch(password, confirmPassword)) {
-            isValid = false;
-        }
-
         // 檢查必填欄位
-        if (!userData.username || !userData.email || !userData.password || !userData.licenseKey) {
+        if (!userData.username || !userData.password || !userData.durationDays) {
             messageBox.error('請填寫所有必填欄位');
             return;
         }
 
-        if (!isValid) {
-            messageBox.error('請修正表單中的錯誤');
+        // 驗證用戶名
+        if (userData.username.length < 3) {
+            messageBox.error('帳號至少需要 3 個字符');
+            return;
+        }
+
+        // 驗證密碼
+        if (userData.password.length < 6) {
+            messageBox.error('密碼至少需要 6 個字符');
             return;
         }
 
         // 提交按鈕狀態
-        const submitBtn = this.form.querySelector('#createUser');
+        const submitBtn = this.form.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 創建中...';
@@ -775,13 +764,12 @@ class UserCreator {
                 messageBox.success('用戶創建成功！');
                 this.resetForm();
                 
-                // 重新載入許可證金鑰列表
-                this.loadAvailableLicenseKeys();
-                
-                // 如果當前在用戶管理頁面，重新載入用戶列表
-                if (window.adminPanel && window.adminPanel.currentSection === 'users') {
+                // 重新載入用戶列表
+                if (window.adminPanel) {
                     window.adminPanel.loadUsers();
                 }
+            } else {
+                throw new Error(response.error || '創建用戶失敗');
             }
         } catch (error) {
             console.error('創建用戶失敗:', error);

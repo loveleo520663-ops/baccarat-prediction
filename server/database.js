@@ -1,14 +1,14 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.join(__dirname, '../database/baccarat.db');
+const dbPath = path.join(__dirname, '../database/baccarat_new.db');
 
 // 創建共享的資料庫連線
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('資料庫連線失敗:', err.message);
   } else {
-    console.log('已連接到 SQLite 資料庫');
+    console.log('✅ 已連接到 SQLite 資料庫:', dbPath);
   }
 });
 
