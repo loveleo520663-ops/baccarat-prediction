@@ -185,6 +185,47 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// 強制重建資料庫端點（緊急修復用）
+app.post('/force-rebuild-db', async (req, res) => {
+  try {
+    console.log('🚨 收到強制重建資料庫請求');
+    
+    // 執行資料庫初始化
+    const initDatabaseScript = require('./newDatabase');
+    await initDatabaseScript();
+    
+    console.log('✅ 資料庫重建完成');
+    
+    // 測試新資料庫
+    const db = require('./database');
+    const testResult = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+    
+    res.json({
+      success: true,
+      message: '資料庫重建成功',
+      userCount: testResult.count,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ 強制重建資料庫失敗:', error);
+    res.status(500).json({
+      success: false,
+      error: '資料庫重建失敗',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // 測試路由（無需認證）- 用於診斷
 app.get('/test/admin/users', (req, res) => {
   const db = require('./database');

@@ -24,6 +24,7 @@
         <input type="text" id="username" value="admin" placeholder="帳號">
         <input type="password" id="password" value="password" placeholder="密碼">
         <button onclick="quickTest()">🚀 快速測試</button>
+        <button onclick="rebuildDatabase()" style="background: #ff9800; margin-top: 10px;">🔧 重建資料庫</button>
         
         <div id="result" style="display: none;"></div>
     </div>
@@ -80,6 +81,43 @@
             } catch (error) {
                 resultDiv.className = 'result error';
                 resultDiv.innerHTML = '<pre>❌ 測試失敗: ' + error.message + '</pre>';
+            }
+        }
+
+        async function rebuildDatabase() {
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.innerHTML = '🔧 正在重建資料庫...';
+            
+            try {
+                const response = await fetch('/force-rebuild-db', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                let message = '🔧 資料庫重建結果:\n';
+                message += '狀態碼: ' + response.status + '\n';
+                message += '響應: ' + JSON.stringify(data, null, 2) + '\n';
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    message += '\n✅ 資料庫重建成功！';
+                    message += '\n用戶數量: ' + data.userCount;
+                    message += '\n\n🎯 現在可以嘗試登錄了：admin / password';
+                } else {
+                    resultDiv.className = 'result error';
+                    message += '\n❌ 資料庫重建失敗';
+                }
+                
+                resultDiv.innerHTML = '<pre>' + message + '</pre>';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<pre>❌ 重建失敗: ' + error.message + '</pre>';
             }
         }
     </script>
