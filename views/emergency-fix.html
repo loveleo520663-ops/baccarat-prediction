@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🚨 緊急修復工具</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 50px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1); 
+            padding: 40px; 
+            border-radius: 15px; 
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 30px; }
+        .problem { 
+            background: rgba(255,0,0,0.2); 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            border: 1px solid rgba(255,0,0,0.5);
+        }
+        .solution { 
+            background: rgba(0,255,0,0.2); 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            border: 1px solid rgba(0,255,0,0.5);
+        }
+        button { 
+            font-size: 1.5em;
+            padding: 20px 40px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        button:hover { background: #45a049; transform: scale(1.05); }
+        .danger { background: #f44336; }
+        .danger:hover { background: #da190b; }
+        .result { 
+            margin: 30px 0; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: left;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background: rgba(0,255,0,0.2); border: 1px solid rgba(0,255,0,0.5); }
+        .error { background: rgba(255,0,0,0.2); border: 1px solid rgba(255,0,0,0.5); }
+        .loading { background: rgba(255,255,0,0.2); border: 1px solid rgba(255,255,0,0.5); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 緊急修復工具</h1>
+        
+        <div class="problem">
+            <h2>🔍 檢測到的問題</h2>
+            <p><strong>SQLITE_ERROR: no such table: users</strong></p>
+            <p>資料庫中缺少 users 表，導致登錄失敗</p>
+        </div>
+
+        <div class="solution">
+            <h2>🔧 解決方案</h2>
+            <p>點擊下面的按鈕重建資料庫，這會：</p>
+            <ul style="text-align: left;">
+                <li>✅ 創建 users 表</li>
+                <li>✅ 插入管理員帳號：admin / password</li>
+                <li>✅ 插入測試用戶</li>
+                <li>✅ 確保系統正常運行</li>
+            </ul>
+        </div>
+
+        <button onclick="emergencyFix()" class="danger">🚨 一鍵修復資料庫</button>
+        <br>
+        <button onclick="testLogin()">🔐 測試登錄</button>
+        <button onclick="checkHealth()">🏥 檢查系統狀態</button>
+
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'loading') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result ' + type;
+            resultDiv.innerHTML = message;
+        }
+
+        async function emergencyFix() {
+            log('🔧 正在執行緊急修復...\n請稍候，這可能需要幾秒鐘...', 'loading');
+            
+            try {
+                const response = await fetch('/force-rebuild-db', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                let message = '🔧 修復結果:\n\n';
+                message += `狀態: ${response.status}\n`;
+                message += `響應: ${JSON.stringify(data, null, 2)}\n\n`;
+                
+                if (response.ok && data.success) {
+                    message += '✅ 緊急修復成功！\n';
+                    message += `📊 創建了 ${data.userCount} 個用戶\n`;
+                    message += '🔑 管理員帳號: admin / password\n\n';
+                    message += '🎯 現在你可以:\n';
+                    message += '• 點擊「測試登錄」驗證修復\n';
+                    message += '• 回到原始登錄頁面使用 admin/password 登錄\n';
+                    message += '• 訪問管理後台進行管理\n';
+                    
+                    log(message, 'success');
+                } else {
+                    message += '❌ 修復失敗\n';
+                    message += '請檢查服務器日志或聯繫技術支援\n';
+                    log(message, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ 修復過程中發生錯誤:\n${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            log('🔐 正在測試登錄...', 'loading');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: 'password' })
+                });
+                
+                const data = await response.json();
+                
+                let message = '🔐 登錄測試結果:\n\n';
+                message += `狀態: ${response.status}\n`;
+                message += `響應: ${JSON.stringify(data, null, 2)}\n\n`;
+                
+                if (response.ok && data.success) {
+                    message += '✅ 登錄測試成功！\n';
+                    message += `👤 用戶: ${data.user.username}\n`;
+                    message += `🛡️ 角色: ${data.user.role}\n\n`;
+                    message += '🎉 系統已完全修復！\n';
+                    message += '現在可以正常使用 admin/password 登錄了\n';
+                    
+                    // 儲存令牌
+                    localStorage.setItem('token', data.token);
+                    
+                    log(message, 'success');
+                } else {
+                    message += '❌ 登錄測試失敗\n';
+                    message += '可能需要再次執行「一鍵修復」\n';
+                    log(message, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ 登錄測試錯誤:\n${error.message}`, 'error');
+            }
+        }
+
+        async function checkHealth() {
+            log('🏥 正在檢查系統健康狀態...', 'loading');
+            
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                let message = '🏥 系統健康檢查:\n\n';
+                message += JSON.stringify(data, null, 2) + '\n\n';
+                
+                if (data.database && data.database.status === 'ok') {
+                    message += '✅ 資料庫狀態正常\n';
+                    message += `📊 用戶數量: ${data.database.userCount}\n`;
+                    log(message, 'success');
+                } else {
+                    message += '❌ 資料庫狀態異常\n';
+                    message += '請執行「一鍵修復資料庫」\n';
+                    log(message, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ 健康檢查錯誤:\n${error.message}`, 'error');
+            }
+        }
+
+        // 頁面載入時自動檢查健康狀態
+        window.addEventListener('load', checkHealth);
+    </script>
+</body>
+</html>
