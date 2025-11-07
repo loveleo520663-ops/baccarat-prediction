@@ -530,66 +530,251 @@
             color: #E5E5E5;
         }
 
-        .trend-chart {
-            height: 280px;
-            min-height: 280px;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(255, 71, 87, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(33, 150, 243, 0.03) 0%, transparent 50%),
-                linear-gradient(145deg, #0a0a0a 0%, #111111 20%, #1a1a1a 40%, #111111 60%, #0a0a0a 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 20px;
+        /* 全新現代化趨勢圖表 */
+        .modern-trend-chart {
+            height: 260px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 16px;
+            padding: 16px;
             position: relative;
             box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 8px 32px rgba(0, 0, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
         }
 
-        .trend-chart::before {
-            content: '';
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            height: 32px;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .legend-item.banker .legend-dot {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            box-shadow: 0 0 8px rgba(255, 71, 87, 0.5);
+        }
+
+        .legend-item.player .legend-dot {
+            background: linear-gradient(45deg, #2196F3, #64B5F6);
+            box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
+        }
+
+        .legend-item.tie .legend-dot {
+            background: linear-gradient(45deg, #4CAF50, #81C784);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        }
+
+        .legend-label {
+            color: #E5E5E5;
+            min-width: 24px;
+        }
+
+        .legend-percent {
+            color: #d4af37;
+            font-weight: 700;
+            font-family: 'Consolas', 'Monaco', monospace;
+            min-width: 32px;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1); 
+                box-shadow: 0 0 4px rgba(76, 175, 80, 0.8);
+            }
+            50% { 
+                opacity: 0.6; 
+                transform: scale(1.2); 
+                box-shadow: 0 0 12px rgba(76, 175, 80, 1);
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 180px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .chart-bars {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .chart-bar {
+            width: 32px;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: barGrow 1s ease-out;
+        }
+
+        @keyframes barGrow {
+            from { 
+                height: 0 !important;
+                opacity: 0;
+            }
+            to { 
+                opacity: 1;
+            }
+        }
+
+        .chart-bar.banker {
+            background: linear-gradient(180deg, #ff4757 0%, #ff6b7a 50%, #ff4757 100%);
+            box-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
+        }
+
+        .chart-bar.player {
+            background: linear-gradient(180deg, #2196F3 0%, #64B5F6 50%, #2196F3 100%);
+            box-shadow: 0 0 12px rgba(33, 150, 243, 0.4);
+        }
+
+        .chart-bar.tie {
+            background: linear-gradient(180deg, #4CAF50 0%, #81C784 50%, #4CAF50 100%);
+            box-shadow: 0 0 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .chart-bar::before {
+            content: attr(data-value);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #E5E5E5;
+            font-size: 9px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .chart-grid {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            animation: scanLine 2s linear infinite;
+            bottom: 0;
+            pointer-events: none;
         }
 
-        @keyframes scanLine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .trend-chart::after {
-            content: '';
+        .grid-line {
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(0, 255, 136, 0.1), transparent, rgba(255, 71, 87, 0.1), transparent);
-            animation: rotate 20s linear infinite;
-            z-index: -1;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.4);
+            padding-left: 8px;
+            display: flex;
+            align-items: center;
         }
 
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .grid-line:first-child,
+        .grid-line:last-child {
+            background: rgba(212, 175, 55, 0.3);
         }
 
-        #trendCanvas {
-            width: 100%;
+        /* 等待狀態樣式 */
+        .waiting-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             height: 100%;
-            max-height: 240px;
-            border-radius: 8px;
-            display: block;
+            gap: 12px;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dots span {
+            width: 6px;
+            height: 6px;
+            background: #d4af37;
+            border-radius: 50%;
+            animation: loadingDot 1.5s infinite ease-in-out;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: 0s; }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes loadingDot {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .waiting-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 柱狀圖動畫增強 */
+        .chart-bar:hover {
+            transform: scaleY(1.05);
+            filter: brightness(1.2);
+        }
+
+        .legend-percent {
+            transition: transform 0.2s ease;
         }
 
 
@@ -818,10 +1003,30 @@
                 margin-bottom: 10px;
             }
             
-            .trend-chart {
-                height: 240px;
-                min-height: 240px;
-                padding: 15px;
+            .modern-trend-chart {
+                height: 220px;
+                padding: 12px;
+            }
+            
+            .chart-header {
+                margin-bottom: 8px;
+                height: 28px;
+            }
+            
+            .chart-legend {
+                gap: 12px;
+            }
+            
+            .legend-item {
+                font-size: 10px;
+            }
+            
+            .chart-container {
+                height: 150px;
+            }
+            
+            .chart-bar {
+                width: 28px;
             }
             
             .stat-item {
@@ -874,10 +1079,37 @@
                 font-size: 1.3rem;
             }
             
-            .trend-chart {
-                height: 220px;
-                min-height: 220px;
-                padding: 12px;
+            .modern-trend-chart {
+                height: 200px;
+                padding: 10px;
+            }
+            
+            .chart-header {
+                margin-bottom: 6px;
+                height: 24px;
+            }
+            
+            .chart-legend {
+                gap: 8px;
+            }
+            
+            .legend-item {
+                font-size: 9px;
+                gap: 4px;
+            }
+            
+            .legend-dot {
+                width: 6px;
+                height: 6px;
+            }
+            
+            .chart-container {
+                height: 130px;
+            }
+            
+            .chart-bar {
+                width: 24px;
+                gap: 6px;
             }
         }
 
@@ -999,10 +1231,50 @@
                 font-size: 1.1rem;
             }
             
-            .trend-chart {
-                height: 200px;
-                min-height: 200px;
-                padding: 10px;
+            .modern-trend-chart {
+                height: 180px;
+                padding: 8px;
+            }
+            
+            .chart-header {
+                margin-bottom: 4px;
+                height: 20px;
+            }
+            
+            .chart-legend {
+                gap: 6px;
+            }
+            
+            .legend-item {
+                font-size: 8px;
+                gap: 3px;
+            }
+            
+            .legend-dot {
+                width: 5px;
+                height: 5px;
+            }
+            
+            .live-indicator {
+                font-size: 8px;
+            }
+            
+            .pulse-dot {
+                width: 4px;
+                height: 4px;
+            }
+            
+            .chart-container {
+                height: 120px;
+            }
+            
+            .chart-bar {
+                width: 20px;
+                gap: 4px;
+            }
+            
+            .grid-line {
+                font-size: 7px;
             }
         }
 
@@ -1141,13 +1413,47 @@
 
         <!-- 右側：分析和走勢 -->
         <div class="analysis-panel">
-            <!-- 趨勢圖表 -->
+            <!-- 全新趨勢圖表 -->
             <div class="trend-section">
                 <div class="section-title">
-                    <i class="fas fa-chart-line"></i> 莊閒和趨勢圖表
+                    <i class="fas fa-chart-area"></i> 即時走勢分析
                 </div>
-                <div class="trend-chart" id="trendChart">
-                    <canvas id="trendCanvas"></canvas>
+                <div class="modern-trend-chart">
+                    <div class="chart-header">
+                        <div class="chart-legend">
+                            <div class="legend-item banker">
+                                <div class="legend-dot"></div>
+                                <span class="legend-label">莊家</span>
+                                <span class="legend-percent">0%</span>
+                            </div>
+                            <div class="legend-item player">
+                                <div class="legend-dot"></div>
+                                <span class="legend-label">閒家</span>
+                                <span class="legend-percent">0%</span>
+                            </div>
+                            <div class="legend-item tie">
+                                <div class="legend-dot"></div>
+                                <span class="legend-label">和局</span>
+                                <span class="legend-percent">0%</span>
+                            </div>
+                        </div>
+                        <div class="live-indicator">
+                            <div class="pulse-dot"></div>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-bars" id="chartBars">
+                            <!-- 動態柱狀圖 -->
+                        </div>
+                        <div class="chart-grid">
+                            <div class="grid-line" style="bottom: 0%">0%</div>
+                            <div class="grid-line" style="bottom: 25%">25%</div>
+                            <div class="grid-line" style="bottom: 50%">50%</div>
+                            <div class="grid-line" style="bottom: 75%">75%</div>
+                            <div class="grid-line" style="bottom: 100%">100%</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1467,241 +1773,90 @@
 
 
 
-            // 現代化趨勢圖表 - 類似交易平台風格
+            // 全新動態柱狀趨勢圖
             updateTrendChart() {
-                const canvas = document.getElementById('trendCanvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                const rect = canvas.getBoundingClientRect();
-                const width = rect.width;
-                const height = rect.height;
-                
-                // 清空畫布
-                ctx.clearRect(0, 0, width, height);
-                
-                if (this.gameHistory.length < 3) {
-                    // 現代化等待界面
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                    ctx.font = '600 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Real-time Analytics', width/2, height/2 - 40);
-                    
-                    // 動態載入點
-                    const dots = ['●', '●●', '●●●'];
-                    const dotIndex = Math.floor(Date.now() / 500) % 3;
-                    ctx.fillStyle = 'rgba(0, 255, 136, 0.8)';
-                    ctx.font = '400 14px monospace';
-                    ctx.fillText(`Loading data ${dots[dotIndex]}`, width/2, height/2 - 10);
-                    
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-                    ctx.font = '400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ctx.fillText('Need at least 3 games to display trends', width/2, height/2 + 20);
+                // 計算統計數據
+                const total = this.gameHistory.length;
+                if (total === 0) {
+                    this.updateChartDisplay(0, 0, 0);
                     return;
                 }
 
-                // 使用最近25局數據
-                const recentGames = this.gameHistory.slice(-25);
-                const margin = { top: 40, right: 80, bottom: 40, left: 70 };
-                const chartWidth = width - margin.left - margin.right;
-                const chartHeight = height - margin.top - margin.bottom;
+                const bankerWins = this.gameHistory.filter(game => game.result === 'banker').length;
+                const playerWins = this.gameHistory.filter(game => game.result === 'player').length;
+                const ties = this.gameHistory.filter(game => game.result === 'tie').length;
+
+                const bankerPercent = (bankerWins / total) * 100;
+                const playerPercent = (playerWins / total) * 100;
+                const tiePercent = (ties / total) * 100;
+
+                // 更新圖表顯示
+                this.updateChartDisplay(bankerPercent, playerPercent, tiePercent);
                 
-                // 計算數據
-                let bankerCount = 0, playerCount = 0, tieCount = 0;
-                const data = [];
+                // 更新圖例百分比
+                this.updateLegendPercents(bankerPercent, playerPercent, tiePercent);
+            }
 
-                recentGames.forEach((game, index) => {
-                    if (game.result === 'banker') bankerCount++;
-                    else if (game.result === 'player') playerCount++;
-                    else if (game.result === 'tie') tieCount++;
-                    
-                    const total = index + 1;
-                    const x = margin.left + (index / Math.max(recentGames.length - 1, 1)) * chartWidth;
-                    
-                    data.push({
-                        x: x,
-                        gameIndex: index,
-                        banker: bankerCount / total,
-                        player: playerCount / total,
-                        tie: tieCount / total
-                    });
-                });
+            updateChartDisplay(bankerPercent, playerPercent, tiePercent) {
+                const chartBars = document.getElementById('chartBars');
+                if (!chartBars) return;
 
-                // 繪製背景網格 - 極簡風格
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.lineWidth = 1;
-                
-                // 水平網格線
-                for (let i = 0; i <= 4; i++) {
-                    const y = margin.top + (chartHeight / 4) * i;
-                    ctx.beginPath();
-                    ctx.moveTo(margin.left, y);
-                    ctx.lineTo(margin.left + chartWidth, y);
-                    ctx.stroke();
-                }
+                // 清空現有柱狀圖
+                chartBars.innerHTML = '';
 
-                if (data.length > 1) {
-                    // 繪製面積填充 - 現代風格
-                    const drawAreaChart = (values, color) => {
-                        const gradient = ctx.createLinearGradient(0, margin.top, 0, margin.top + chartHeight);
-                        gradient.addColorStop(0, color.replace('1)', '0.2)'));
-                        gradient.addColorStop(1, color.replace('1)', '0.02)'));
-                        
-                        ctx.fillStyle = gradient;
-                        ctx.beginPath();
-                        ctx.moveTo(data[0].x, margin.top + chartHeight);
-                        
-                        for (let i = 0; i < data.length; i++) {
-                            const y = margin.top + chartHeight - (values[i] * chartHeight);
-                            ctx.lineTo(data[i].x, y);
-                        }
-                        
-                        ctx.lineTo(data[data.length - 1].x, margin.top + chartHeight);
-                        ctx.closePath();
-                        ctx.fill();
-                    };
-
-                    // 繪製面積圖
-                    drawAreaChart(data.map(d => d.banker), 'rgba(255, 71, 87, 1)');
-                    drawAreaChart(data.map(d => d.player), 'rgba(33, 150, 243, 1)');
-                    drawAreaChart(data.map(d => d.tie), 'rgba(76, 175, 80, 1)');
-
-                    // 繪製現代化趨勢線
-                    const drawModernLine = (values, color, lineWidth = 3) => {
-                        ctx.strokeStyle = color;
-                        ctx.lineWidth = lineWidth;
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-                        
-                        // 創建平滑曲線
-                        ctx.beginPath();
-                        const firstY = margin.top + chartHeight - (values[0] * chartHeight);
-                        ctx.moveTo(data[0].x, firstY);
-                        
-                        for (let i = 1; i < data.length; i++) {
-                            const y = margin.top + chartHeight - (values[i] * chartHeight);
-                            
-                            if (i === 1) {
-                                ctx.lineTo(data[i].x, y);
-                            } else {
-                                // 貝塞爾曲線平滑
-                                const prevX = data[i-1].x;
-                                const prevY = margin.top + chartHeight - (values[i-1] * chartHeight);
-                                const cpX = (prevX + data[i].x) / 2;
-                                
-                                ctx.quadraticCurveTo(cpX, prevY, data[i].x, y);
-                            }
-                        }
-                        ctx.stroke();
-                    };
-
-                    // 繪製三條趨勢線
-                    drawModernLine(data.map(d => d.tie), 'rgba(76, 175, 80, 0.9)', 2);
-                    drawModernLine(data.map(d => d.player), 'rgba(33, 150, 243, 1)', 3);
-                    drawModernLine(data.map(d => d.banker), 'rgba(255, 71, 87, 1)', 3);
-
-                    // 繪製現代數據點
-                    const drawModernPoints = (values, color) => {
-                        values.forEach((value, index) => {
-                            const x = data[index].x;
-                            const y = margin.top + chartHeight - (value * chartHeight);
-                            
-                            // 外圈發光效果
-                            const glow = ctx.createRadialGradient(x, y, 0, x, y, 12);
-                            glow.addColorStop(0, color.replace('1)', '0.3)'));
-                            glow.addColorStop(1, 'transparent');
-                            ctx.fillStyle = glow;
-                            ctx.beginPath();
-                            ctx.arc(x, y, 12, 0, 2 * Math.PI);
-                            ctx.fill();
-                            
-                            // 數據點
-                            ctx.fillStyle = color;
-                            ctx.beginPath();
-                            ctx.arc(x, y, 4, 0, 2 * Math.PI);
-                            ctx.fill();
-                            
-                            // 內圈高亮
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                            ctx.beginPath();
-                            ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                            ctx.fill();
-                        });
-                    };
-
-                    // 只在最後幾個點顯示數據點
-                    const lastPoints = 3;
-                    if (data.length > lastPoints) {
-                        const recentData = data.slice(-lastPoints);
-                        const recentBanker = recentData.map(d => d.banker);
-                        const recentPlayer = recentData.map(d => d.player);
-                        const recentTie = recentData.map(d => d.tie);
-                        
-                        drawModernPoints(recentBanker, 'rgba(255, 71, 87, 1)');
-                        drawModernPoints(recentPlayer, 'rgba(33, 150, 243, 1)');
-                        drawModernPoints(recentTie, 'rgba(76, 175, 80, 1)');
-                    }
-                }
-
-                // 現代化圖例
-                const legendItems = [
-                    { label: 'BANKER', color: 'rgba(255, 71, 87, 1)', value: data.length > 0 ? data[data.length - 1].banker : 0 },
-                    { label: 'PLAYER', color: 'rgba(33, 150, 243, 1)', value: data.length > 0 ? data[data.length - 1].player : 0 },
-                    { label: 'TIE', color: 'rgba(76, 175, 80, 1)', value: data.length > 0 ? data[data.length - 1].tie : 0 }
+                // 創建三個動態柱狀圖
+                const bars = [
+                    { type: 'banker', percent: bankerPercent, label: '莊' },
+                    { type: 'player', percent: playerPercent, label: '閒' },
+                    { type: 'tie', percent: tiePercent, label: '和' }
                 ];
 
-                legendItems.forEach((item, index) => {
-                    const x = 15;
-                    const y = 20 + index * 25;
+                bars.forEach((bar, index) => {
+                    const barElement = document.createElement('div');
+                    barElement.className = `chart-bar ${bar.type}`;
+                    barElement.setAttribute('data-value', `${bar.percent.toFixed(1)}%`);
                     
-                    // 圖例點
-                    ctx.fillStyle = item.color;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
-                    ctx.fill();
+                    // 設置高度（最大100%）
+                    const height = Math.max(bar.percent, 2); // 最小高度2%確保可見
+                    barElement.style.height = `${height}%`;
                     
-                    // 標籤
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                    ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(item.label, x + 12, y + 4);
+                    // 添加延遲動畫
+                    barElement.style.animationDelay = `${index * 0.2}s`;
                     
-                    // 數值
-                    ctx.fillStyle = item.color;
-                    ctx.font = '700 13px monospace';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(`${(item.value * 100).toFixed(1)}%`, x + 60, y + 4);
+                    chartBars.appendChild(barElement);
                 });
 
-                // Y軸標籤
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-                ctx.font = '400 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                ctx.textAlign = 'right';
-                
-                for (let i = 0; i <= 4; i++) {
-                    const percentage = 100 - (i * 25);
-                    const y = margin.top + (chartHeight / 4) * i + 3;
-                    ctx.fillText(`${percentage}%`, margin.left - 10, y);
+                // 如果沒有數據，顯示等待狀態
+                if (bankerPercent === 0 && playerPercent === 0 && tiePercent === 0) {
+                    chartBars.innerHTML = `
+                        <div class="waiting-state">
+                            <div class="loading-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <div class="waiting-text">等待遊戲數據</div>
+                        </div>
+                    `;
                 }
+            }
 
-                // 標題
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                ctx.font = '600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Win Rate Trends', width / 2, 25);
-
-                // 實時指示器
-                const now = Date.now();
-                const pulse = (Math.sin(now * 0.005) + 1) * 0.5;
-                ctx.fillStyle = `rgba(0, 255, 136, ${0.5 + pulse * 0.5})`;
-                ctx.beginPath();
-                ctx.arc(width - 20, 20, 4, 0, 2 * Math.PI);
-                ctx.fill();
+            updateLegendPercents(bankerPercent, playerPercent, tiePercent) {
+                const legendItems = document.querySelectorAll('.legend-item');
+                const percents = [bankerPercent, playerPercent, tiePercent];
                 
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.font = '400 9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                ctx.textAlign = 'right';
-                ctx.fillText('LIVE', width - 30, 24);
+                legendItems.forEach((item, index) => {
+                    const percentSpan = item.querySelector('.legend-percent');
+                    if (percentSpan) {
+                        percentSpan.textContent = `${percents[index].toFixed(1)}%`;
+                        
+                        // 添加數值變化動畫
+                        percentSpan.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            percentSpan.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                });
             }
 
 
@@ -1931,9 +2086,6 @@
                 });
             }
 
-            // 初始化趨勢圖表
-            setupTrendChart();
-            
             // 監聽窗口大小變化，重新調整網格
             window.addEventListener('resize', function() {
                 if (game) {
@@ -1941,55 +2093,6 @@
                 }
             });
         });
-
-        // 設置趨勢圖表
-        function setupTrendChart() {
-            const canvas = document.getElementById('trendCanvas');
-            if (canvas) {
-                resizeCanvas();
-                window.addEventListener('resize', resizeCanvas);
-                
-                // 添加點擊刷新功能
-                canvas.addEventListener('click', function() {
-                    if (game) {
-                        game.updateTrendChart();
-                    }
-                });
-            }
-        }
-
-        // 調整Canvas大小
-        function resizeCanvas() {
-            const canvas = document.getElementById('trendCanvas');
-            if (!canvas) return;
-            
-            const container = canvas.parentElement;
-            const containerStyle = window.getComputedStyle(container);
-            const paddingTop = parseInt(containerStyle.paddingTop);
-            const paddingBottom = parseInt(containerStyle.paddingBottom);
-            const paddingLeft = parseInt(containerStyle.paddingLeft);
-            const paddingRight = parseInt(containerStyle.paddingRight);
-            
-            // 動態計算 canvas 尺寸
-            canvas.width = container.clientWidth - paddingLeft - paddingRight;
-            canvas.height = container.clientHeight - paddingTop - paddingBottom;
-            
-            // 設置高 DPI 顯示
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = rect.height + 'px';
-            
-            const ctx = canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
-            
-            // 重新繪製圖表
-            if (game) {
-                game.updateTrendChart();
-            }
-        }
     </script>
 </body>
 </html>
