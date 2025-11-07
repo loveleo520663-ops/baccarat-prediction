@@ -6,12 +6,13 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="cache-buster" content="20241107-1445">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- 版本標記：v2.3 - 移除外部common.js依賴 -->
-    <title>百家樂預測系統 - 遊戲大廳</title>
+    <!-- 版本標記：v2.4 - 手機版格子優化 2024-11-07 -->
+    <title>百家樂預測系統 v2.4 - 遊戲大廳</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -555,6 +556,20 @@
 
         /* 手機版 (768px以下) */
         @media (max-width: 768px) {
+            /* 手機版標識 - 用於測試 */
+            .navbar::before {
+                content: "📱 手機版 5×10";
+                position: absolute;
+                top: -20px;
+                left: 10px;
+                font-size: 12px;
+                color: #FFD700;
+                background: rgba(0,0,0,0.7);
+                padding: 2px 8px;
+                border-radius: 10px;
+                z-index: 1000;
+            }
+            
             body {
                 font-size: 14px;
             }
@@ -730,6 +745,11 @@
 
         /* 小手機版 (375px以下) */
         @media (max-width: 375px) {
+            /* 小手機版標識 - 用於測試 */
+            .navbar::before {
+                content: "📱 小屏版 5×8" !important;
+            }
+            
             body {
                 font-size: 13px;
             }
