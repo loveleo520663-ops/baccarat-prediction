@@ -531,36 +531,54 @@
         }
 
         .trend-chart {
-            height: 280px;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 25%, #2d2d2d 50%, #1a1a1a 75%, #0f0f0f 100%);
-            border: 3px solid #d4af37;
-            border-radius: 15px;
-            padding: 20px;
+            height: 320px;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 71, 87, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(33, 150, 243, 0.03) 0%, transparent 50%),
+                linear-gradient(145deg, #0a0a0a 0%, #111111 20%, #1a1a1a 40%, #111111 60%, #0a0a0a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
             position: relative;
             box-shadow: 
-                inset 0 0 20px rgba(212, 175, 55, 0.15),
-                0 0 30px rgba(212, 175, 55, 0.3),
-                0 5px 15px rgba(0, 0, 0, 0.5);
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
 
         .trend-chart::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #d4af37, #ffd700, #d4af37, #ffed4a);
-            border-radius: 15px;
-            z-index: -1;
-            background-size: 400% 400%;
-            animation: borderGlow 3s ease-in-out infinite;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: scanLine 2s linear infinite;
         }
 
-        @keyframes borderGlow {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+        @keyframes scanLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .trend-chart::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 255, 136, 0.1), transparent, rgba(255, 71, 87, 0.1), transparent);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         #trendCanvas {
@@ -1439,7 +1457,7 @@
 
 
 
-            // 更新趨勢圖表 - 美化版三線趨勢圖
+            // 現代化趨勢圖表 - 類似交易平台風格
             updateTrendChart() {
                 const canvas = document.getElementById('trendCanvas');
                 if (!canvas) return;
@@ -1452,35 +1470,34 @@
                 ctx.clearRect(0, 0, width, height);
                 
                 if (this.gameHistory.length < 3) {
-                    // 美化的等待提示
-                    const gradient = ctx.createLinearGradient(0, 0, width, 0);
-                    gradient.addColorStop(0, '#d4af37');
-                    gradient.addColorStop(1, '#ffd700');
-                    
-                    ctx.fillStyle = gradient;
-                    ctx.font = 'bold 20px Arial';
+                    // 現代化等待界面
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.font = '600 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('📊 莊閒和趨勢分析', width/2, height/2 - 30);
+                    ctx.fillText('Real-time Analytics', width/2, height/2 - 40);
                     
-                    ctx.fillStyle = '#cccccc';
-                    ctx.font = '14px Arial';
-                    ctx.fillText('至少需要3局遊戲記錄', width/2, height/2 - 5);
-                    ctx.fillText('來顯示趨勢變化', width/2, height/2 + 15);
+                    // 動態載入點
+                    const dots = ['●', '●●', '●●●'];
+                    const dotIndex = Math.floor(Date.now() / 500) % 3;
+                    ctx.fillStyle = 'rgba(0, 255, 136, 0.8)';
+                    ctx.font = '400 14px monospace';
+                    ctx.fillText(`Loading data ${dots[dotIndex]}`, width/2, height/2 - 10);
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.font = '400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText('Need at least 3 games to display trends', width/2, height/2 + 20);
                     return;
                 }
 
-                // 取最近20局數據獲得更平滑的趨勢
-                const recentGames = this.gameHistory.slice(-20);
-                const chartWidth = width - 100;
-                const chartHeight = height - 100;
-                const paddingLeft = 60;
-                const paddingTop = 50;
-                const paddingRight = 40;
-                const paddingBottom = 50;
+                // 使用最近25局數據
+                const recentGames = this.gameHistory.slice(-25);
+                const margin = { top: 40, right: 80, bottom: 40, left: 70 };
+                const chartWidth = width - margin.left - margin.right;
+                const chartHeight = height - margin.top - margin.bottom;
                 
-                // 計算數據點
+                // 計算數據
                 let bankerCount = 0, playerCount = 0, tieCount = 0;
-                const dataPoints = [];
+                const data = [];
 
                 recentGames.forEach((game, index) => {
                     if (game.result === 'banker') bankerCount++;
@@ -1488,199 +1505,192 @@
                     else if (game.result === 'tie') tieCount++;
                     
                     const total = index + 1;
-                    const x = paddingLeft + (index / Math.max(recentGames.length - 1, 1)) * chartWidth;
+                    const x = margin.left + (index / Math.max(recentGames.length - 1, 1)) * chartWidth;
                     
-                    dataPoints.push({
+                    data.push({
                         x: x,
-                        banker: { y: paddingTop + chartHeight - (bankerCount / total) * chartHeight, rate: bankerCount / total },
-                        player: { y: paddingTop + chartHeight - (playerCount / total) * chartHeight, rate: playerCount / total },
-                        tie: { y: paddingTop + chartHeight - (tieCount / total) * chartHeight, rate: tieCount / total }
+                        gameIndex: index,
+                        banker: bankerCount / total,
+                        player: playerCount / total,
+                        tie: tieCount / total
                     });
                 });
 
-                // 繪製精美背景
-                const bgGradient = ctx.createLinearGradient(0, paddingTop, 0, paddingTop + chartHeight);
-                bgGradient.addColorStop(0, 'rgba(212, 175, 55, 0.1)');
-                bgGradient.addColorStop(0.5, 'rgba(212, 175, 55, 0.05)');
-                bgGradient.addColorStop(1, 'rgba(212, 175, 55, 0.1)');
-                ctx.fillStyle = bgGradient;
-                ctx.fillRect(paddingLeft, paddingTop, chartWidth, chartHeight);
-
-                // 繪製網格線
-                ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+                // 繪製背景網格 - 極簡風格
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                 ctx.lineWidth = 1;
                 
                 // 水平網格線
-                for (let i = 0; i <= 5; i++) {
-                    const y = paddingTop + (chartHeight / 5) * i;
+                for (let i = 0; i <= 4; i++) {
+                    const y = margin.top + (chartHeight / 4) * i;
                     ctx.beginPath();
-                    if (i === 0 || i === 5) {
-                        ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
-                        ctx.lineWidth = 2;
-                    } else {
-                        ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
-                        ctx.lineWidth = 1;
-                    }
-                    ctx.moveTo(paddingLeft, y);
-                    ctx.lineTo(paddingLeft + chartWidth, y);
-                    ctx.stroke();
-                }
-                
-                // 垂直網格線
-                const verticalLines = Math.min(recentGames.length, 10);
-                for (let i = 0; i <= verticalLines; i++) {
-                    const x = paddingLeft + (chartWidth / verticalLines) * i;
-                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(x, paddingTop);
-                    ctx.lineTo(x, paddingTop + chartHeight);
+                    ctx.moveTo(margin.left, y);
+                    ctx.lineTo(margin.left + chartWidth, y);
                     ctx.stroke();
                 }
 
-                if (dataPoints.length > 1) {
-                    // 繪製趨勢線帶陰影效果
-                    const drawTrendLine = (points, color, label) => {
-                        // 陰影效果
-                        ctx.shadowColor = color;
-                        ctx.shadowBlur = 5;
-                        ctx.shadowOffsetX = 2;
-                        ctx.shadowOffsetY = 2;
+                if (data.length > 1) {
+                    // 繪製面積填充 - 現代風格
+                    const drawAreaChart = (values, color) => {
+                        const gradient = ctx.createLinearGradient(0, margin.top, 0, margin.top + chartHeight);
+                        gradient.addColorStop(0, color.replace('1)', '0.2)'));
+                        gradient.addColorStop(1, color.replace('1)', '0.02)'));
                         
-                        // 趨勢線
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.moveTo(data[0].x, margin.top + chartHeight);
+                        
+                        for (let i = 0; i < data.length; i++) {
+                            const y = margin.top + chartHeight - (values[i] * chartHeight);
+                            ctx.lineTo(data[i].x, y);
+                        }
+                        
+                        ctx.lineTo(data[data.length - 1].x, margin.top + chartHeight);
+                        ctx.closePath();
+                        ctx.fill();
+                    };
+
+                    // 繪製面積圖
+                    drawAreaChart(data.map(d => d.banker), 'rgba(255, 71, 87, 1)');
+                    drawAreaChart(data.map(d => d.player), 'rgba(33, 150, 243, 1)');
+                    drawAreaChart(data.map(d => d.tie), 'rgba(76, 175, 80, 1)');
+
+                    // 繪製現代化趨勢線
+                    const drawModernLine = (values, color, lineWidth = 3) => {
                         ctx.strokeStyle = color;
-                        ctx.lineWidth = 4;
+                        ctx.lineWidth = lineWidth;
                         ctx.lineCap = 'round';
                         ctx.lineJoin = 'round';
-                        ctx.beginPath();
-                        ctx.moveTo(points[0].x, points[0][label].y);
                         
-                        for (let i = 1; i < points.length; i++) {
-                            ctx.lineTo(points[i].x, points[i][label].y);
+                        // 創建平滑曲線
+                        ctx.beginPath();
+                        const firstY = margin.top + chartHeight - (values[0] * chartHeight);
+                        ctx.moveTo(data[0].x, firstY);
+                        
+                        for (let i = 1; i < data.length; i++) {
+                            const y = margin.top + chartHeight - (values[i] * chartHeight);
+                            
+                            if (i === 1) {
+                                ctx.lineTo(data[i].x, y);
+                            } else {
+                                // 貝塞爾曲線平滑
+                                const prevX = data[i-1].x;
+                                const prevY = margin.top + chartHeight - (values[i-1] * chartHeight);
+                                const cpX = (prevX + data[i].x) / 2;
+                                
+                                ctx.quadraticCurveTo(cpX, prevY, data[i].x, y);
+                            }
                         }
                         ctx.stroke();
-                        
-                        // 清除陰影
-                        ctx.shadowBlur = 0;
-                        ctx.shadowOffsetX = 0;
-                        ctx.shadowOffsetY = 0;
                     };
 
                     // 繪製三條趨勢線
-                    drawTrendLine(dataPoints, '#FF4757', 'banker');  // 更鮮艷的紅色
-                    drawTrendLine(dataPoints, '#2196F3', 'player');  // 更現代的藍色
-                    drawTrendLine(dataPoints, '#4CAF50', 'tie');     // 更清新的綠色
+                    drawModernLine(data.map(d => d.tie), 'rgba(76, 175, 80, 0.9)', 2);
+                    drawModernLine(data.map(d => d.player), 'rgba(33, 150, 243, 1)', 3);
+                    drawModernLine(data.map(d => d.banker), 'rgba(255, 71, 87, 1)', 3);
 
-                    // 繪製數據點（帶光暈效果）
-                    const drawDataPoints = (points, color, label) => {
-                        points.forEach((point, index) => {
-                            // 外圈光暈
-                            const glowGradient = ctx.createRadialGradient(point.x, point[label].y, 0, point.x, point[label].y, 8);
-                            glowGradient.addColorStop(0, color);
-                            glowGradient.addColorStop(1, 'transparent');
-                            ctx.fillStyle = glowGradient;
+                    // 繪製現代數據點
+                    const drawModernPoints = (values, color) => {
+                        values.forEach((value, index) => {
+                            const x = data[index].x;
+                            const y = margin.top + chartHeight - (value * chartHeight);
+                            
+                            // 外圈發光效果
+                            const glow = ctx.createRadialGradient(x, y, 0, x, y, 12);
+                            glow.addColorStop(0, color.replace('1)', '0.3)'));
+                            glow.addColorStop(1, 'transparent');
+                            ctx.fillStyle = glow;
                             ctx.beginPath();
-                            ctx.arc(point.x, point[label].y, 8, 0, 2 * Math.PI);
+                            ctx.arc(x, y, 12, 0, 2 * Math.PI);
                             ctx.fill();
                             
-                            // 數據點本體
+                            // 數據點
                             ctx.fillStyle = color;
                             ctx.beginPath();
-                            ctx.arc(point.x, point[label].y, 5, 0, 2 * Math.PI);
+                            ctx.arc(x, y, 4, 0, 2 * Math.PI);
                             ctx.fill();
                             
-                            // 白色邊框
-                            ctx.strokeStyle = '#FFFFFF';
-                            ctx.lineWidth = 2;
-                            ctx.stroke();
+                            // 內圈高亮
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            ctx.beginPath();
+                            ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                            ctx.fill();
                         });
                     };
 
-                    drawDataPoints(dataPoints, '#FF4757', 'banker');
-                    drawDataPoints(dataPoints, '#2196F3', 'player');
-                    drawDataPoints(dataPoints, '#4CAF50', 'tie');
+                    // 只在最後幾個點顯示數據點
+                    const lastPoints = 3;
+                    if (data.length > lastPoints) {
+                        const recentData = data.slice(-lastPoints);
+                        const recentBanker = recentData.map(d => d.banker);
+                        const recentPlayer = recentData.map(d => d.player);
+                        const recentTie = recentData.map(d => d.tie);
+                        
+                        drawModernPoints(recentBanker, 'rgba(255, 71, 87, 1)');
+                        drawModernPoints(recentPlayer, 'rgba(33, 150, 243, 1)');
+                        drawModernPoints(recentTie, 'rgba(76, 175, 80, 1)');
+                    }
                 }
 
-                // 美化的圖例區域
-                const legendY = 15;
-                const legendBg = ctx.createLinearGradient(0, legendY - 5, 0, legendY + 25);
-                legendBg.addColorStop(0, 'rgba(45, 45, 45, 0.8)');
-                legendBg.addColorStop(1, 'rgba(64, 64, 64, 0.8)');
-                ctx.fillStyle = legendBg;
-                ctx.fillRect(10, legendY - 5, 200, 30);
-                ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(10, legendY - 5, 200, 30);
+                // 現代化圖例
+                const legendItems = [
+                    { label: 'BANKER', color: 'rgba(255, 71, 87, 1)', value: data.length > 0 ? data[data.length - 1].banker : 0 },
+                    { label: 'PLAYER', color: 'rgba(33, 150, 243, 1)', value: data.length > 0 ? data[data.length - 1].player : 0 },
+                    { label: 'TIE', color: 'rgba(76, 175, 80, 1)', value: data.length > 0 ? data[data.length - 1].tie : 0 }
+                ];
 
-                // 圖例項目
-                ctx.font = 'bold 14px Arial';
-                ctx.textAlign = 'left';
-                
-                // 莊家圖例
-                ctx.fillStyle = '#FF4757';
-                ctx.fillRect(15, legendY + 8, 20, 4);
-                ctx.fillText('莊', 40, legendY + 15);
-                
-                // 閒家圖例  
-                ctx.fillStyle = '#2196F3';
-                ctx.fillRect(75, legendY + 8, 20, 4);
-                ctx.fillText('閒', 100, legendY + 15);
-                
-                // 和局圖例
-                ctx.fillStyle = '#4CAF50';
-                ctx.fillRect(135, legendY + 8, 20, 4);
-                ctx.fillText('和', 160, legendY + 15);
+                legendItems.forEach((item, index) => {
+                    const x = 15;
+                    const y = 20 + index * 25;
+                    
+                    // 圖例點
+                    ctx.fillStyle = item.color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // 標籤
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(item.label, x + 12, y + 4);
+                    
+                    // 數值
+                    ctx.fillStyle = item.color;
+                    ctx.font = '700 13px monospace';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`${(item.value * 100).toFixed(1)}%`, x + 60, y + 4);
+                });
 
-                // 右側當前數值面板
-                if (dataPoints.length > 0) {
-                    const latest = dataPoints[dataPoints.length - 1];
-                    
-                    // 數值背景
-                    const valuesBg = ctx.createLinearGradient(width - 80, 10, width - 10, 80);
-                    valuesBg.addColorStop(0, 'rgba(45, 45, 45, 0.9)');
-                    valuesBg.addColorStop(1, 'rgba(26, 26, 26, 0.9)');
-                    ctx.fillStyle = valuesBg;
-                    ctx.fillRect(width - 80, 10, 70, 70);
-                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(width - 80, 10, 70, 70);
-                    
-                    // 當前百分比
-                    ctx.font = 'bold 12px Arial';
-                    ctx.textAlign = 'right';
-                    
-                    ctx.fillStyle = '#FF4757';
-                    ctx.fillText(`${Math.round(latest.banker.rate * 100)}%`, width - 15, 30);
-                    
-                    ctx.fillStyle = '#2196F3';
-                    ctx.fillText(`${Math.round(latest.player.rate * 100)}%`, width - 15, 50);
-                    
-                    ctx.fillStyle = '#4CAF50';
-                    ctx.fillText(`${Math.round(latest.tie.rate * 100)}%`, width - 15, 70);
-                }
-
-                // Y軸百分比標籤
-                ctx.fillStyle = '#d4af37';
-                ctx.font = 'bold 12px Arial';
+                // Y軸標籤
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.font = '400 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                 ctx.textAlign = 'right';
-                for (let i = 0; i <= 5; i++) {
-                    const percentage = 100 - (i * 20);
-                    const y = paddingTop + (chartHeight / 5) * i + 5;
-                    ctx.fillText(`${percentage}%`, paddingLeft - 10, y);
+                
+                for (let i = 0; i <= 4; i++) {
+                    const percentage = 100 - (i * 25);
+                    const y = margin.top + (chartHeight / 4) * i + 3;
+                    ctx.fillText(`${percentage}%`, margin.left - 10, y);
                 }
 
-                // X軸標籤（局數）
-                ctx.fillStyle = '#d4af37';
-                ctx.font = '11px Arial';
+                // 標題
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.font = '600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                 ctx.textAlign = 'center';
-                const totalGames = this.gameHistory.length;
-                const startGame = Math.max(1, totalGames - recentGames.length + 1);
+                ctx.fillText('Win Rate Trends', width / 2, 25);
+
+                // 實時指示器
+                const now = Date.now();
+                const pulse = (Math.sin(now * 0.005) + 1) * 0.5;
+                ctx.fillStyle = `rgba(0, 255, 136, ${0.5 + pulse * 0.5})`;
+                ctx.beginPath();
+                ctx.arc(width - 20, 20, 4, 0, 2 * Math.PI);
+                ctx.fill();
                 
-                for (let i = 0; i < recentGames.length; i += Math.ceil(recentGames.length / 5)) {
-                    const x = paddingLeft + (i / Math.max(recentGames.length - 1, 1)) * chartWidth;
-                    const gameNum = startGame + i;
-                    ctx.fillText(`第${gameNum}局`, x, height - 15);
-                }
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.font = '400 9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('LIVE', width - 30, 24);
             }
 
 
