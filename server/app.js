@@ -127,13 +127,42 @@ app.use('/api/prediction', authenticateToken, predictionRoutes);
 app.use('/api/license', licenseRoutes);
 
 // 健康檢查路由
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+app.get('/health', async (req, res) => {
+  try {
+    const db = require('./database');
+    
+    // 測試資料庫連接
+    const dbStatus = await new Promise((resolve) => {
+      db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
+        if (err) {
+          resolve({ status: 'error', error: err.message });
+        } else {
+          resolve({ status: 'ok', userCount: result.count });
+        }
+      });
+    });
+
+    res.status(200).json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      database: dbStatus,
+      routes: {
+        adminUsers: '/api/admin/users',
+        adminStats: '/api/admin/stats',
+        adminLicense: '/api/admin/license/keys',
+        testUsers: '/test/admin/users',
+        testStats: '/test/admin/stats'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // 測試路由（無需認證）- 用於診斷
