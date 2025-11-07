@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 快速登錄測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; background: #f0f0f0; }
+        .container { max-width: 500px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #45a049; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 快速登錄測試</h1>
+        <p><strong>正確帳號：</strong>admin</p>
+        <p><strong>正確密碼：</strong>password</p>
+        
+        <input type="text" id="username" value="admin" placeholder="帳號">
+        <input type="password" id="password" value="password" placeholder="密碼">
+        <button onclick="quickTest()">🚀 快速測試</button>
+        
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function quickTest() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.innerHTML = '🔄 正在測試...';
+            
+            try {
+                // 1. 先檢查健康狀態
+                const healthResponse = await fetch('/health');
+                const healthData = await healthResponse.json();
+                
+                let message = '📊 系統狀態:\n' + JSON.stringify(healthData, null, 2) + '\n\n';
+                
+                // 2. 測試登錄
+                const loginResponse = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                message += '🔐 登錄測試:\n';
+                message += '狀態碼: ' + loginResponse.status + '\n';
+                message += '響應: ' + JSON.stringify(loginData, null, 2) + '\n';
+                
+                if (loginResponse.ok) {
+                    resultDiv.className = 'result success';
+                    message += '\n✅ 登錄成功！';
+                    
+                    // 儲存令牌
+                    localStorage.setItem('token', loginData.token);
+                    
+                    // 顯示跳轉選項
+                    message += '\n\n🎯 現在你可以:\n';
+                    message += '• 訪問 /admin (管理後台)\n';
+                    message += '• 訪問 /game (遊戲頁面)\n';
+                    message += '• 訪問 /dashboard (儀表板)';
+                } else {
+                    resultDiv.className = 'result error';
+                    message += '\n❌ 登錄失敗';
+                }
+                
+                resultDiv.innerHTML = '<pre>' + message + '</pre>';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<pre>❌ 測試失敗: ' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>
