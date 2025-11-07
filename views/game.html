@@ -650,61 +650,61 @@
                 border-radius: 6px;
             }
             
-            /* 手機版：重置所有卡片旋轉，確保正確方向 */
+            /* 手機版：上面兩張卡片旋轉90度（變成橫躺的長方形） */
             .card-slot[data-index="0"], 
             .card-slot[data-index="1"] {
-                transform: none !important;
+                transform: rotate(90deg) !important;
+                transform-origin: center;
             }
             
             .card-slot[data-index="0"]:hover, 
             .card-slot[data-index="1"]:hover {
-                transform: scale(1.1) !important;
+                transform: rotate(90deg) scale(1.1) !important;
             }
             
             .card-slot[data-index="0"].red, 
             .card-slot[data-index="1"].red {
-                transform: scale(1.05) !important;
+                transform: rotate(90deg) scale(1.05) !important;
             }
             
             .card-slot[data-index="0"].red:hover, 
             .card-slot[data-index="1"].red:hover {
-                transform: scale(1.15) !important;
+                transform: rotate(90deg) scale(1.15) !important;
             }
             
             .card-slot[data-index="0"].black, 
             .card-slot[data-index="1"].black {
-                transform: scale(1.05) !important;
+                transform: rotate(90deg) scale(1.05) !important;
             }
             
             .card-slot[data-index="0"].black:hover, 
             .card-slot[data-index="1"].black:hover {
-                transform: scale(1.15) !important;
+                transform: rotate(90deg) scale(1.15) !important;
             }
             
-            /* 手機版：確保第三張卡片（下方）是旋轉的 */
+            /* 手機版：下方卡片保持直立 */
             .card-slot[data-index="2"] {
-                transform: rotate(90deg) !important;
-                transform-origin: center;
+                transform: none !important;
             }
 
             .card-slot[data-index="2"]:hover {
-                transform: rotate(90deg) scale(1.1) !important;
+                transform: scale(1.1) !important;
             }
 
             .card-slot[data-index="2"].red {
-                transform: rotate(90deg) scale(1.05) !important;
+                transform: scale(1.05) !important;
             }
 
             .card-slot[data-index="2"].red:hover {
-                transform: rotate(90deg) scale(1.15) !important;
+                transform: scale(1.15) !important;
             }
 
             .card-slot[data-index="2"].black {
-                transform: rotate(90deg) scale(1.05) !important;
+                transform: scale(1.05) !important;
             }
 
             .card-slot[data-index="2"].black:hover {
-                transform: rotate(90deg) scale(1.15) !important;
+                transform: scale(1.15) !important;
             }
             
             .triangle-layout {
@@ -847,61 +847,61 @@
                 font-size: 0.65rem;
             }
             
-            /* 小螢幕版：重置所有卡片旋轉，確保正確方向 */
+            /* 小螢幕版：上面兩張卡片旋轉90度（變成橫躺的長方形） */
             .card-slot[data-index="0"], 
             .card-slot[data-index="1"] {
-                transform: none !important;
+                transform: rotate(90deg) !important;
+                transform-origin: center;
             }
             
             .card-slot[data-index="0"]:hover, 
             .card-slot[data-index="1"]:hover {
-                transform: scale(1.1) !important;
+                transform: rotate(90deg) scale(1.1) !important;
             }
             
             .card-slot[data-index="0"].red, 
             .card-slot[data-index="1"].red {
-                transform: scale(1.05) !important;
+                transform: rotate(90deg) scale(1.05) !important;
             }
             
             .card-slot[data-index="0"].red:hover, 
             .card-slot[data-index="1"].red:hover {
-                transform: scale(1.15) !important;
+                transform: rotate(90deg) scale(1.15) !important;
             }
             
             .card-slot[data-index="0"].black, 
             .card-slot[data-index="1"].black {
-                transform: scale(1.05) !important;
+                transform: rotate(90deg) scale(1.05) !important;
             }
             
             .card-slot[data-index="0"].black:hover, 
             .card-slot[data-index="1"].black:hover {
-                transform: scale(1.15) !important;
+                transform: rotate(90deg) scale(1.15) !important;
             }
             
-            /* 小螢幕版：確保第三張卡片（下方）是旋轉的 */
+            /* 小螢幕版：下方卡片保持直立 */
             .card-slot[data-index="2"] {
-                transform: rotate(90deg) !important;
-                transform-origin: center;
+                transform: none !important;
             }
 
             .card-slot[data-index="2"]:hover {
-                transform: rotate(90deg) scale(1.1) !important;
+                transform: scale(1.1) !important;
             }
 
             .card-slot[data-index="2"].red {
-                transform: rotate(90deg) scale(1.05) !important;
+                transform: scale(1.05) !important;
             }
 
             .card-slot[data-index="2"].red:hover {
-                transform: rotate(90deg) scale(1.15) !important;
+                transform: scale(1.15) !important;
             }
 
             .card-slot[data-index="2"].black {
-                transform: rotate(90deg) scale(1.05) !important;
+                transform: scale(1.05) !important;
             }
 
             .card-slot[data-index="2"].black:hover {
-                transform: rotate(90deg) scale(1.15) !important;
+                transform: scale(1.15) !important;
             }
             
             .result-btn {
