@@ -190,29 +190,18 @@ app.post('/force-rebuild-db', async (req, res) => {
   try {
     console.log('🚨 收到強制重建資料庫請求');
     
-    // 執行資料庫初始化
-    const initDatabaseScript = require('./newDatabase');
-    await initDatabaseScript();
+    // 使用新的創建資料庫函數
+    const { createDatabaseNow } = require('./createDB');
+    const userCount = await createDatabaseNow();
     
     console.log('✅ 資料庫重建完成');
-    
-    // 測試新資料庫
-    const db = require('./database');
-    const testResult = await new Promise((resolve, reject) => {
-      db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
     
     res.json({
       success: true,
       message: '資料庫重建成功',
-      userCount: testResult.count,
-      timestamp: new Date().toISOString()
+      userCount: userCount,
+      timestamp: new Date().toISOString(),
+      details: '資料庫已從零開始創建'
     });
     
   } catch (error) {
@@ -224,6 +213,31 @@ app.post('/force-rebuild-db', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+// 檢查資料庫文件是否存在
+app.get('/check-db-file', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const dbPath = path.join(__dirname, '../database/baccarat_new.db');
+  const dbDir = path.join(__dirname, '../database');
+  
+  const fileExists = fs.existsSync(dbPath);
+  const dirExists = fs.existsSync(dbDir);
+  
+  let fileSize = 0;
+  if (fileExists) {
+    const stats = fs.statSync(dbPath);
+    fileSize = stats.size;
+  }
+  
+  res.json({
+    dbPath: dbPath,
+    directoryExists: dirExists,
+    fileExists: fileExists,
+    fileSize: fileSize,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // 測試路由（無需認證）- 用於診斷
