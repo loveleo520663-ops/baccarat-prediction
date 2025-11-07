@@ -42,7 +42,7 @@ const initDatabase = async () => {
         setTimeout(async () => {
           try {
             // 創建管理員帳號
-            const adminPassword = await bcrypt.hash('admin123', 10);
+            const adminPassword = await bcrypt.hash('password', 10);
             const adminExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
             
             db.run(`
@@ -52,7 +52,7 @@ const initDatabase = async () => {
               if (err) {
                 console.error('❌ 創建管理員失敗:', err);
               } else {
-                console.log('👤 管理員帳號: admin / admin123');
+                console.log('👤 管理員帳號: admin / password');
               }
             });
             

@@ -343,8 +343,9 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
   await initDatabase();
   
   console.log('✅ 應用啟動完成');
-  console.log('📱 內存資料庫已初始化');
-  console.log('🔑 預設帳號：admin/password 和 test/password');
+  console.log('�️ SQLite 資料庫已初始化');
+  console.log('� 管理員帳號：admin / password (擁有後台權限)');
+  console.log('🔑 測試帳號：test001 / test123');
   console.log('🎉 部署成功！');
 });
 
