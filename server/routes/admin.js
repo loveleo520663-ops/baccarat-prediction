@@ -1,27 +1,44 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
-const db = require('../database');
+
+// 記憶體儲存 - 替代資料庫
+let users = [
+  {
+    id: 1,
+    username: 'admin',
+    password_hash: '$2a$10$X8rM9QJ1YxK2Ln3w4F5vLOyH3mZ8Nq7P5k2X9Rt6Sw4A1Bv8Cy0De', // password: admin123
+    role: 'admin',
+    is_active: 1,
+    created_at: new Date().toISOString(),
+    expiration_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1年後到期
+  }
+];
+
+let licenseKeys = [];
+let nextUserId = 2;
+let nextLicenseId = 1;
 
 const router = express.Router();
 
 // 獲取所有用戶
 router.get('/users', (req, res) => {
-  db.all(`
-    SELECT u.id, u.username, u.email, u.role, u.license_key, 
-           u.license_expiry, u.created_at, u.last_login, u.is_active,
-           lk.duration_days
-    FROM users u
-    LEFT JOIN license_keys lk ON u.license_key = lk.key_code
-    ORDER BY u.created_at DESC
-  `, (err, users) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: '資料庫錯誤' });
-    }
+  try {
+    // 過濾掉密碼哈希，返回安全的用戶資料
+    const safeUsers = users.map(user => ({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      is_active: user.is_active,
+      created_at: user.created_at,
+      expiration_date: user.expiration_date
+    }));
 
-    res.json({ success: true, users });
-  });
+    res.json({ success: true, users: safeUsers });
+  } catch (error) {
+    console.error('獲取用戶錯誤:', error);
+    res.status(500).json({ error: '獲取用戶失敗' });
+  }
 });
 
 // 創建用戶
@@ -51,13 +68,8 @@ router.post('/users/create', async (req, res) => {
 
   try {
     // 檢查用戶名是否已存在
-    const existingUser = await new Promise((resolve, reject) => {
-      db.get('SELECT id FROM users WHERE username = ?', [username], (err, user) => {
-        if (err) reject(err);
-        else resolve(user);
-      });
-    });
-
+    const existingUser = users.find(user => user.username === username);
+    
     if (existingUser) {
       return res.status(409).json({ error: '帳號已存在' });
     }
@@ -70,32 +82,34 @@ router.post('/users/create', async (req, res) => {
     const expirationDate = new Date();
     expirationDate.setDate(expirationDate.getDate() + 30);
 
-    // 創建用戶
-    const userId = await new Promise((resolve, reject) => {
-      db.run(`
-        INSERT INTO users (username, password_hash, expiration_date, role, is_active, created_at)
-        VALUES (?, ?, ?, 'user', 1, datetime('now'))
-      `, [username, hashedPassword, expirationDate.toISOString()], function(err) {
-        if (err) reject(err);
-        else resolve(this.lastID);
-      });
-    });
+    // 創建新用戶
+    const newUser = {
+      id: nextUserId++,
+      username: username,
+      password_hash: hashedPassword,
+      role: 'user',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      expiration_date: expirationDate.toISOString()
+    };
 
-    // 獲取新創建的用戶資訊
-    const newUser = await new Promise((resolve, reject) => {
-      db.get(`
-        SELECT id, username, role, expiration_date, created_at, is_active
-        FROM users WHERE id = ?
-      `, [userId], (err, user) => {
-        if (err) reject(err);
-        else resolve(user);
-      });
-    });
+    // 添加到記憶體儲存
+    users.push(newUser);
+
+    // 返回安全的用戶資料（不包含密碼哈希）
+    const safeUser = {
+      id: newUser.id,
+      username: newUser.username,
+      role: newUser.role,
+      is_active: newUser.is_active,
+      created_at: newUser.created_at,
+      expiration_date: newUser.expiration_date
+    };
 
     res.status(201).json({
       success: true,
       message: '用戶創建成功',
-      user: newUser
+      user: safeUser
     });
 
   } catch (error) {
@@ -115,220 +129,184 @@ router.post('/license/generate', (req, res) => {
     return res.status(400).json({ error: '一次最多只能生成 100 個金鑰' });
   }
 
-  const generatedKeys = [];
-
-  db.serialize(() => {
-    const stmt = db.prepare('INSERT INTO license_keys (key_code, duration_days) VALUES (?, ?)');
+  try {
+    const generatedKeys = [];
     
     for (let i = 0; i < count; i++) {
       const keyCode = `BAC-${uuidv4().substr(0, 8).toUpperCase()}-${Date.now().toString().substr(-4)}`;
-      stmt.run([keyCode, durationDays]);
+      
+      const newKey = {
+        id: nextLicenseId++,
+        key_code: keyCode,
+        duration_days: durationDays,
+        is_used: 0,
+        used_by: null,
+        created_at: new Date().toISOString(),
+        used_at: null
+      };
+
+      licenseKeys.push(newKey);
       generatedKeys.push({
         key_code: keyCode,
         duration_days: durationDays
       });
     }
-    
-    stmt.finalize(() => {
-      res.json({
-        success: true,
-        message: `成功生成 ${count} 個許可證金鑰`,
-        keys: generatedKeys
-      });
-    });
-  });
 
+    res.json({
+      success: true,
+      message: `成功生成 ${count} 個許可證金鑰`,
+      keys: generatedKeys
+    });
+
+  } catch (error) {
+    console.error('生成金鑰錯誤:', error);
+    res.status(500).json({ error: '生成金鑰失敗' });
+  }
 });
 
 // 獲取許可證金鑰列表
 router.get('/license/keys', (req, res) => {
-  const { page = 1, limit = 50 } = req.query;
-  const offset = (page - 1) * limit;
-
-  // 獲取總數
-  db.get('SELECT COUNT(*) as total FROM license_keys', (err, countResult) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: '資料庫錯誤' });
-    }
-
-    // 獲取許可證列表
-    db.all(`
-      SELECT lk.*, u.username as used_by_username
-      FROM license_keys lk
-      LEFT JOIN users u ON lk.used_by = u.id
-      ORDER BY lk.created_at DESC
-      LIMIT ? OFFSET ?
-    `, [limit, offset], (err, keys) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: '資料庫錯誤' });
-      }
-
-      res.json({
-        success: true,
-        keys,
-        total: countResult.total,
-        page: parseInt(page),
-        totalPages: Math.ceil(countResult.total / limit)
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    const offset = (page - 1) * limit;
+    
+    // 獲取總數
+    const total = licenseKeys.length;
+    
+    // 獲取分頁數據
+    const keysWithUsernames = licenseKeys
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(offset, offset + parseInt(limit))
+      .map(key => {
+        const usedByUser = users.find(user => user.id === key.used_by);
+        return {
+          ...key,
+          used_by_username: usedByUser ? usedByUser.username : null
+        };
       });
-    });
-  });
 
+    res.json({
+      success: true,
+      keys: keysWithUsernames,
+      total: total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / limit)
+    });
+
+  } catch (error) {
+    console.error('獲取金鑰錯誤:', error);
+    res.status(500).json({ error: '獲取金鑰失敗' });
+  }
 });
 
 // 禁用/啟用用戶
 router.put('/users/:id/toggle', (req, res) => {
-  const userId = req.params.id;
-
-  db.get('SELECT is_active FROM users WHERE id = ?', [userId], (err, user) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: '資料庫錯誤' });
-    }
+  try {
+    const userId = parseInt(req.params.id);
+    const user = users.find(u => u.id === userId);
 
     if (!user) {
       return res.status(404).json({ error: '用戶不存在' });
     }
 
-    const newStatus = user.is_active ? 0 : 1;
+    // 切換狀態
+    user.is_active = user.is_active ? 0 : 1;
 
-    db.run('UPDATE users SET is_active = ? WHERE id = ?', [newStatus, userId], (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: '更新用戶狀態失敗' });
-      }
-
-      res.json({
-        success: true,
-        message: `用戶已${newStatus ? '啟用' : '禁用'}`,
-        is_active: newStatus
-      });
+    res.json({
+      success: true,
+      message: `用戶已${user.is_active ? '啟用' : '禁用'}`,
+      is_active: user.is_active
     });
-  });
 
+  } catch (error) {
+    console.error('更新用戶狀態錯誤:', error);
+    res.status(500).json({ error: '更新用戶狀態失敗' });
+  }
 });
 
 // 延長用戶許可證
 router.put('/users/:id/extend-license', (req, res) => {
-  const userId = req.params.id;
-  const { days } = req.body;
+  try {
+    const userId = parseInt(req.params.id);
+    const { days } = req.body;
 
-  if (!days || days <= 0) {
-    return res.status(400).json({ error: '請輸入有效的延長天數' });
-  }
-
-  db.get('SELECT license_expiry FROM users WHERE id = ?', [userId], (err, user) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: '資料庫錯誤' });
+    if (!days || days <= 0) {
+      return res.status(400).json({ error: '請輸入有效的延長天數' });
     }
+
+    const user = users.find(u => u.id === userId);
 
     if (!user) {
       return res.status(404).json({ error: '用戶不存在' });
     }
 
     // 計算新的到期時間
-    let currentExpiry = user.license_expiry ? new Date(user.license_expiry) : new Date();
+    let currentExpiry = user.expiration_date ? new Date(user.expiration_date) : new Date();
     if (currentExpiry < new Date()) {
       currentExpiry = new Date(); // 如果已過期，從今天開始計算
     }
     
     currentExpiry.setDate(currentExpiry.getDate() + parseInt(days));
+    user.expiration_date = currentExpiry.toISOString();
 
-    db.run('UPDATE users SET license_expiry = ? WHERE id = ?', [currentExpiry.toISOString(), userId], (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: '延長許可證失敗' });
-      }
-
-      res.json({
-        success: true,
-        message: `許可證已延長 ${days} 天`,
-        new_expiry: currentExpiry.toISOString()
-      });
+    res.json({
+      success: true,
+      message: `許可證已延長 ${days} 天`,
+      new_expiry: currentExpiry.toISOString()
     });
-  });
 
+  } catch (error) {
+    console.error('延長許可證錯誤:', error);
+    res.status(500).json({ error: '延長許可證失敗' });
+  }
 });
 
 // 獲取系統統計
 router.get('/stats', (req, res) => {
-  const stats = {};
+  try {
+    const stats = {
+      totalUsers: users.filter(u => u.role === 'user').length,
+      activeUsers: users.filter(u => u.role === 'user' && u.is_active === 1).length,
+      totalLicenseKeys: licenseKeys.length,
+      usedLicenseKeys: licenseKeys.filter(k => k.is_used === 1).length,
+      totalPredictions: 0, // 暫時設為 0，因為沒有預測資料
+      correctPredictions: 0,
+      accuracyRate: 0
+    };
 
-  db.serialize(() => {
-    // 用戶統計
-    db.get('SELECT COUNT(*) as total FROM users WHERE role = "user"', (err, userCount) => {
-      if (err) console.error(err);
-      stats.totalUsers = userCount ? userCount.total : 0;
-    });
+    res.json({ success: true, stats });
 
-    db.get('SELECT COUNT(*) as active FROM users WHERE role = "user" AND is_active = 1', (err, activeUsers) => {
-      if (err) console.error(err);
-      stats.activeUsers = activeUsers ? activeUsers.active : 0;
-    });
-
-    // 許可證統計
-    db.get('SELECT COUNT(*) as total FROM license_keys', (err, totalKeys) => {
-      if (err) console.error(err);
-      stats.totalLicenseKeys = totalKeys ? totalKeys.total : 0;
-    });
-
-    db.get('SELECT COUNT(*) as used FROM license_keys WHERE is_used = 1', (err, usedKeys) => {
-      if (err) console.error(err);
-      stats.usedLicenseKeys = usedKeys ? usedKeys.used : 0;
-    });
-
-    // 預測統計
-    db.get('SELECT COUNT(*) as total FROM predictions', (err, totalPredictions) => {
-      if (err) console.error(err);
-      stats.totalPredictions = totalPredictions ? totalPredictions.total : 0;
-    });
-
-    db.get('SELECT COUNT(*) as correct FROM predictions WHERE is_correct = 1', (err, correctPredictions) => {
-      if (err) console.error(err);
-      stats.correctPredictions = correctPredictions ? correctPredictions.correct : 0;
-      
-      // 計算準確率
-      if (stats.totalPredictions > 0) {
-        stats.accuracyRate = ((stats.correctPredictions / stats.totalPredictions) * 100).toFixed(2);
-      } else {
-        stats.accuracyRate = 0;
-      }
-
-      res.json({ success: true, stats });
-    });
-  });
-
+  } catch (error) {
+    console.error('獲取統計錯誤:', error);
+    res.status(500).json({ error: '獲取統計失敗' });
+  }
 });
 
 // 刪除許可證金鑰
 router.delete('/license/:id', (req, res) => {
-  const keyId = req.params.id;
+  try {
+    const keyId = parseInt(req.params.id);
+    const keyIndex = licenseKeys.findIndex(k => k.id === keyId);
 
-  db.get('SELECT is_used FROM license_keys WHERE id = ?', [keyId], (err, key) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: '資料庫錯誤' });
-    }
-
-    if (!key) {
+    if (keyIndex === -1) {
       return res.status(404).json({ error: '許可證金鑰不存在' });
     }
+
+    const key = licenseKeys[keyIndex];
 
     if (key.is_used) {
       return res.status(400).json({ error: '無法刪除已使用的許可證金鑰' });
     }
 
-    db.run('DELETE FROM license_keys WHERE id = ?', [keyId], (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: '刪除許可證金鑰失敗' });
-      }
+    // 從陣列中移除
+    licenseKeys.splice(keyIndex, 1);
 
-      res.json({ success: true, message: '許可證金鑰已刪除' });
-    });
-  });
+    res.json({ success: true, message: '許可證金鑰已刪除' });
+
+  } catch (error) {
+    console.error('刪除金鑰錯誤:', error);
+    res.status(500).json({ error: '刪除許可證金鑰失敗' });
+  }
 });
 
 module.exports = router;
