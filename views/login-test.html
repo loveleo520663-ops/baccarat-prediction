@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>登入測試</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h2>登入測試</h2>
+    <div id="result"></div>
+    
+    <h3>測試管理員登入</h3>
+    <button onclick="testAdminLogin()">測試 admin/password</button>
+    
+    <h3>測試用戶登入</h3>
+    <button onclick="testUserLogin()">測試 test/password</button>
+
+    <script>
+        async function testAdminLogin() {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'password'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    '<h4>管理員登入結果:</h4><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    alert('管理員登入成功！');
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<h4>錯誤:</h4><pre>' + error.message + '</pre>';
+            }
+        }
+
+        async function testUserLogin() {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'test',
+                        password: 'password'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    '<h4>用戶登入結果:</h4><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    alert('用戶登入成功！');
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<h4>錯誤:</h4><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>

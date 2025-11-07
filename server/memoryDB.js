@@ -16,7 +16,7 @@ class MemoryDB {
     this.users.set('admin', {
       id: 1,
       username: 'admin',
-      password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+      password: '$2a$10$ZpG9f84a6O/GegFdky0AgO0GpWhx2pDA7h7ZSsPEEBeV3FRtLWzh6', // password
       email: 'admin@baccarat.com',
       role: 'admin',
       licenseKey: 'ADMIN-FOREVER',
@@ -30,7 +30,7 @@ class MemoryDB {
     this.users.set('test', {
       id: 2,
       username: 'test',
-      password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+      password: '$2a$10$ZpG9f84a6O/GegFdky0AgO0GpWhx2pDA7h7ZSsPEEBeV3FRtLWzh6', // password
       email: 'test@baccarat.com',
       role: 'user',
       licenseKey: 'TEST-2024',
@@ -39,6 +39,9 @@ class MemoryDB {
       lastLogin: null,
       isActive: true
     });
+    
+    console.log('✅ 管理員帳號已初始化：admin / password');
+    console.log('✅ 測試帳號已初始化：test / password');
   }
 
   initLicenseKeys() {

@@ -305,9 +305,11 @@
             border: 3px solid #6c7086;
             border-radius: 15px;
             padding: 15px;
-            min-height: 200px;
+            min-height: 220px;
+            height: auto;
             box-shadow: 0 0 20px rgba(108, 112, 134, 0.3);
             position: relative;
+            overflow: visible;
         }
 
         .record-grid {
@@ -316,12 +318,13 @@
             grid-template-columns: repeat(20, 1fr);
             grid-auto-flow: column;
             gap: 2px;
-            height: 180px;
+            min-height: 200px;
+            height: auto;
             width: 100%;
             overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: visible;
             background: #2a2a2a;
-            padding: 3px;
+            padding: 8px;
             border-radius: 8px;
             border: 2px solid #6c7086;
             box-sizing: border-box;
@@ -338,6 +341,8 @@
             font-size: 1.1rem;
             transition: all 0.3s;
             box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+            min-height: 32px;
+            height: 32px;
             aspect-ratio: 1;
             box-sizing: border-box;
         }
@@ -485,15 +490,20 @@
         }
 
         .trend-chart {
-            height: 150px;
+            height: 200px;
             background: linear-gradient(135deg, rgba(85, 85, 85, 0.15) 0%, rgba(26, 26, 26, 0.3) 100%);
             border: 2px solid rgba(85, 85, 85, 0.3);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #CCCCCC;
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
         }
+
+        #trendCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+
 
         /* 響應式設計 */
         /* 平板版 (1024px以下) */
@@ -533,24 +543,29 @@
             }
             
             .record-container {
-                padding: 6px;
-                min-height: 160px; /* 增加容器高度 */
+                padding: 8px;
+                min-height: 200px; /* 增加容器高度 */
+                height: auto;
+                overflow: visible;
             }
             
             .record-grid {
-                height: 130px; /* 增加網格高度 */
-                gap: 1px;
-                padding: 2px;
+                min-height: 180px; /* 增加網格高度 */
+                height: auto;
+                gap: 2px;
+                padding: 4px;
                 grid-template-columns: repeat(10, 1fr); /* 10列 */
                 grid-template-rows: repeat(5, 1fr); /* 確保5排 */
                 grid-auto-flow: column; /* 重要：按列填充 */
                 display: grid; /* 確保是grid佈局 */
+                overflow-y: visible;
             }
             
             .record-item {
-                font-size: 0.7rem;
+                font-size: 0.8rem;
                 aspect-ratio: 1;
-                min-height: 20px; /* 確保最小高度 */
+                min-height: 28px; /* 確保最小高度 */
+                height: 28px;
             }
             
             .card-area {
@@ -583,23 +598,28 @@
             }
             
             .record-container {
-                padding: 4px;
-                min-height: 140px; /* 增加容器高度 */
+                padding: 6px;
+                min-height: 170px; /* 增加容器高度 */
+                height: auto;
+                overflow: visible;
             }
             
             .record-grid {
-                height: 110px; /* 增加網格高度 */
-                gap: 0.5px;
-                padding: 1px;
+                min-height: 150px; /* 增加網格高度 */
+                height: auto;
+                gap: 1px;
+                padding: 2px;
                 grid-template-columns: repeat(8, 1fr); /* 8列 */
                 grid-template-rows: repeat(5, 1fr); /* 確保5排 */
                 grid-auto-flow: column; /* 重要：按列填充 */
                 display: grid; /* 確保是grid佈局 */
+                overflow-y: visible;
             }
             
             .record-item {
-                font-size: 0.6rem;
-                min-height: 18px; /* 確保最小高度 */
+                font-size: 0.7rem;
+                min-height: 24px; /* 確保最小高度 */
+                height: 24px;
             }
             
             .card-slot {
@@ -778,11 +798,17 @@
             </div>
 
             <!-- 趨勢分析 -->
+            <!-- 趨勢圖表 -->
             <div class="trend-section">
                 <div class="section-title">
-                    <i class="fas fa-chart-line"></i> 趨勢分析
+                    <i class="fas fa-chart-line"></i> 趨勢圖表
                 </div>
                 <div class="trend-chart" id="trendChart">
+                    <canvas id="trendCanvas" width="300" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
                     <i class="fas fa-chart-line" style="font-size: 3rem; opacity: 0.5;"></i>
                 </div>
             </div>
@@ -1048,6 +1074,137 @@
                     `${playerWins} (${total > 0 ? Math.round(playerWins/total*100) : 0}%)`;
                 document.getElementById('tieGames').textContent = 
                     `${ties} (${total > 0 ? Math.round(ties/total*100) : 0}%)`;
+
+                // 更新趨勢圖表
+                this.updateTrendChart();
+            }
+
+
+
+            // 更新趨勢圖表
+            updateTrendChart() {
+                const canvas = document.getElementById('trendCanvas');
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // 清空畫布
+                ctx.clearRect(0, 0, width, height);
+                
+                if (this.gameHistory.length < 2) {
+                    // 顯示等待數據的提示
+                    ctx.fillStyle = '#CCCCCC';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('📊 趨勢圖表', width/2, height/2 - 20);
+                    ctx.font = '12px Arial';
+                    ctx.fillStyle = '#999999';
+                    ctx.fillText('記錄更多局數以顯示趨勢', width/2, height/2 + 5);
+                    return;
+                }
+
+                // 取最近20局數據
+                const recentGames = this.gameHistory.slice(-20);
+                const stepX = width / Math.max(recentGames.length - 1, 1);
+                
+                // 計算莊家勝率趨勢
+                let bankerWins = 0;
+                let totalGames = 0;
+                const trendPoints = [];
+
+                recentGames.forEach((game, index) => {
+                    if (game.result === 'banker') bankerWins++;
+                    if (game.result !== 'tie') totalGames++; // 排除和局
+                    
+                    if (totalGames > 0) {
+                        const bankerRate = bankerWins / totalGames;
+                        const y = height - (bankerRate * height);
+                        trendPoints.push({ 
+                            x: index * stepX, 
+                            y: y,
+                            rate: bankerRate 
+                        });
+                    }
+                });
+
+                if (trendPoints.length > 0) {
+                    // 繪製背景網格
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.lineWidth = 1;
+                    
+                    // 水平網格線 (25%, 50%, 75%)
+                    for (let i = 1; i <= 3; i++) {
+                        const y = (height / 4) * i;
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(width, y);
+                        ctx.stroke();
+                    }
+                    
+                    // 50%基準線加粗
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, height/2);
+                    ctx.lineTo(width, height/2);
+                    ctx.stroke();
+
+                    // 繪製趨勢線
+                    if (trendPoints.length > 1) {
+                        // 漸變色趨勢線
+                        const gradient = ctx.createLinearGradient(0, 0, width, 0);
+                        gradient.addColorStop(0, '#FF6B6B');
+                        gradient.addColorStop(0.5, '#4ECDC4');
+                        gradient.addColorStop(1, '#45B7D1');
+                        
+                        ctx.strokeStyle = gradient;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(trendPoints[0].x, trendPoints[0].y);
+                        
+                        for (let i = 1; i < trendPoints.length; i++) {
+                            ctx.lineTo(trendPoints[i].x, trendPoints[i].y);
+                        }
+                        ctx.stroke();
+
+                        // 繪製數據點
+                        trendPoints.forEach((point, index) => {
+                            ctx.fillStyle = point.rate > 0.5 ? '#DC143C' : '#1E90FF';
+                            ctx.beginPath();
+                            ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
+                            ctx.fill();
+                            
+                            // 邊框
+                            ctx.strokeStyle = '#FFFFFF';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        });
+                    }
+
+                    // 添加標籤和數值
+                    ctx.fillStyle = '#CCCCCC';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('莊家勝率趨勢', 10, 20);
+                    
+                    // 顯示當前勝率
+                    const currentRate = trendPoints[trendPoints.length - 1].rate;
+                    const percentage = Math.round(currentRate * 100);
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = currentRate > 0.5 ? '#DC143C' : '#1E90FF';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillText(`${percentage}%`, width - 10, 20);
+                    
+                    // 百分比標籤
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.font = '10px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('75%', width - 5, height * 0.25 + 3);
+                    ctx.fillText('50%', width - 5, height * 0.5 + 3);
+                    ctx.fillText('25%', width - 5, height * 0.75 + 3);
+                }
             }
 
             // 生成預測建議
@@ -1274,7 +1431,41 @@
                     if (game) game.recordResult('player');
                 });
             }
+
+            // 初始化趨勢圖表
+            setupTrendChart();
         });
+
+        // 設置趨勢圖表
+        function setupTrendChart() {
+            const canvas = document.getElementById('trendCanvas');
+            if (canvas) {
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                // 添加點擊刷新功能
+                canvas.addEventListener('click', function() {
+                    if (game) {
+                        game.updateTrendChart();
+                    }
+                });
+            }
+        }
+
+        // 調整Canvas大小
+        function resizeCanvas() {
+            const canvas = document.getElementById('trendCanvas');
+            if (!canvas) return;
+            
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 20;
+            canvas.height = 180;
+            
+            // 重新繪製圖表
+            if (game) {
+                game.updateTrendChart();
+            }
+        }
     </script>
 </body>
 </html>
