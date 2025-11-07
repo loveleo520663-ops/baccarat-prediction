@@ -29,19 +29,39 @@ const initDatabase = async () => {
     // 如果資料庫不存在，創建它
     if (!fs.existsSync(dbPath)) {
       console.log('📝 資料庫不存在，正在創建...');
-      const initScript = require('./newDatabase');
+      const initDatabaseScript = require('./newDatabase');
+      await initDatabaseScript();
       console.log('✅ 資料庫創建完成');
     } else {
       console.log('✅ 資料庫已存在');
     }
 
-    // 測試資料庫連接
+    // 測試資料庫連接和表是否存在
     const db = require('./database');
-    await new Promise((resolve, reject) => {
-      db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
+    await new Promise(async (resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM users', async (err, result) => {
         if (err) {
-          console.error('❌ 資料庫連接測試失敗:', err);
-          reject(err);
+          console.error('❌ 用戶表不存在，需要重新初始化資料庫');
+          console.log('🔄 正在重新創建資料庫...');
+          
+          try {
+            const initDatabaseScript = require('./newDatabase');
+            await initDatabaseScript();
+            console.log('✅ 資料庫重新創建完成');
+            
+            // 重新測試
+            db.get('SELECT COUNT(*) as count FROM users', (err2, result2) => {
+              if (err2) {
+                reject(err2);
+              } else {
+                console.log('✅ 資料庫連接正常，用戶數量:', result2.count);
+                resolve();
+              }
+            });
+          } catch (initError) {
+            console.error('❌ 資料庫重新初始化失敗:', initError);
+            reject(initError);
+          }
         } else {
           console.log('✅ 資料庫連接正常，用戶數量:', result.count);
           resolve();

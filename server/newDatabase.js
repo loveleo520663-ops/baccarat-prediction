@@ -3,21 +3,19 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 
-const dbPath = path.join(__dirname, '../database/baccarat_new.db');
-
-// 刪除舊資料庫
-if (fs.existsSync(dbPath)) {
-  fs.unlinkSync(dbPath);
-  console.log('🗑️ 已刪除舊資料庫');
-}
-
-const db = new sqlite3.Database(dbPath);
-
-console.log('🚀 開始初始化新資料庫...');
-
 // 建立資料表和初始資料
 const initDatabase = async () => {
   return new Promise((resolve, reject) => {
+    const dbPath = path.join(__dirname, '../database/baccarat_new.db');
+    
+    // 刪除舊資料庫（如果存在）
+    if (fs.existsSync(dbPath)) {
+      fs.unlinkSync(dbPath);
+      console.log('🗑️ 已刪除舊資料庫');
+    }
+    
+    const db = new sqlite3.Database(dbPath);
+    console.log('🚀 開始初始化新資料庫...');
     db.serialize(async () => {
       try {
         // 創建用戶表
@@ -83,7 +81,16 @@ const initDatabase = async () => {
 
             console.log('🎉 資料庫初始化完成！');
             console.log('📍 資料庫檔案:', dbPath);
-            resolve();
+            
+            // 關閉資料庫連接
+            db.close((err) => {
+              if (err) {
+                console.error('❌ 關閉資料庫連接失敗:', err);
+              } else {
+                console.log('✅ 資料庫連接已關閉');
+              }
+              resolve();
+            });
             
           } catch (error) {
             console.error('❌ 插入資料時發生錯誤:', error);
@@ -99,7 +106,5 @@ const initDatabase = async () => {
   });
 };
 
-// 執行初始化
-initDatabase().catch(console.error);
-
-module.exports = db;
+// 導出初始化函數
+module.exports = initDatabase;
