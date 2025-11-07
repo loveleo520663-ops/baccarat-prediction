@@ -2,11 +2,217 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>百家樂預測系統 - 登入</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/login.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #404040 50%, #2d2d2d 75%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card {
+            background: linear-gradient(145deg, #2a2a2a 0%, #1e1e1e 100%);
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
+            color: #f5f5f5;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-header i {
+            font-size: 3.5rem;
+            color: #d4af37;
+            margin-bottom: 20px;
+            display: block;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f5f5f5 0%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-header p {
+            opacity: 0.8;
+            font-size: 0.95rem;
+            color: #cccccc;
+        }
+
+        .auth-form {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            z-index: 1;
+            font-size: 1.1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group input::placeholder {
+            color: #888;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input:focus + i {
+            color: #d4af37;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            color: #1a1a1a;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+            background: linear-gradient(135deg, #e6c24a 0%, #d4af37 100%);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+
+        .register-notice {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .register-notice i {
+            color: #d4af37;
+            margin-right: 8px;
+        }
+
+        .login-footer {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .login-footer i {
+            color: #4caf50;
+            margin-right: 8px;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .login-header {
+                padding: 30px 20px;
+            }
+            
+            .login-header h1 {
+                font-size: 1.6rem;
+            }
+            
+            .auth-form {
+                padding: 30px 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .form-group input {
+                padding: 12px 12px 12px 40px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
@@ -17,13 +223,8 @@
                 <p>專業預測，精準分析</p>
             </div>
 
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('login')">登入</button>
-                <button class="tab-btn" onclick="switchTab('register')">註冊</button>
-            </div>
-
             <!-- 登入表單 -->
-            <form id="loginForm" class="auth-form active">
+            <form id="loginForm" class="auth-form">
                 <div class="form-group">
                     <i class="fas fa-user"></i>
                     <input type="text" id="loginUsername" placeholder="用戶名" required>
@@ -36,41 +237,13 @@
 
                 <button type="submit" class="auth-btn">
                     <i class="fas fa-sign-in-alt"></i>
-                    登入
+                    登入系統
                 </button>
             </form>
 
-            <!-- 註冊表單 -->
-            <form id="registerForm" class="auth-form">
-                <div class="form-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="registerUsername" placeholder="用戶名" required>
-                </div>
-                
-                <div class="form-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="registerEmail" placeholder="電子郵件（選填）">
-                </div>
-                
-                <div class="form-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="registerPassword" placeholder="密碼（至少6位）" required>
-                </div>
-
-                <div class="form-group">
-                    <i class="fas fa-key"></i>
-                    <input type="text" id="licenseKey" placeholder="許可證金鑰" required>
-                    <button type="button" class="validate-btn" onclick="validateLicense()">
-                        <i class="fas fa-check"></i>
-                    </button>
-                </div>
-                <div id="licenseStatus" class="license-status"></div>
-
-                <button type="submit" class="auth-btn">
-                    <i class="fas fa-user-plus"></i>
-                    註冊
-                </button>
-            </form>
+            <div class="register-notice">
+                <p><i class="fas fa-user-plus"></i> 需要註冊帳號？請聯繫管理員</p>
+            </div>
 
             <div class="login-footer">
                 <p><i class="fas fa-shield-alt"></i> 安全加密連接</p>
@@ -79,22 +252,159 @@
     </div>
 
     <!-- 載入動畫 -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>處理中...</p>
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="text-align: center; color: white;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px; color: #d4af37;"></i>
+            <p>登入中...</p>
         </div>
     </div>
 
     <!-- 訊息提示 -->
-    <div id="messageBox" class="message-box">
-        <div class="message-content">
+    <div id="messageBox" style="display: none; position: fixed; top: 20px; right: 20px; background: #333; color: white; padding: 15px 20px; border-radius: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+        <div style="display: flex; align-items: center; gap: 10px;">
             <i id="messageIcon" class="fas fa-info-circle"></i>
             <span id="messageText"></span>
         </div>
     </div>
 
-    <script src="/js/common.js"></script>
-    <script src="/js/login.js"></script>
+    <script>
+        // 簡化的登入功能
+        class Auth {
+            constructor() {
+                this.token = localStorage.getItem('authToken');
+                this.username = localStorage.getItem('username');
+            }
+
+            async login(username, password) {
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('username', data.user.username);
+                        this.token = data.token;
+                        this.username = data.user.username;
+                        return { success: true, user: data.user };
+                    } else {
+                        return { success: false, error: data.message || '登入失敗' };
+                    }
+                } catch (error) {
+                    console.error('登入錯誤:', error);
+                    return { success: false, error: '網絡連接錯誤，請稍後重試' };
+                }
+            }
+
+            isAuthenticated() {
+                return !!this.token;
+            }
+        }
+
+        // 顯示訊息
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            const messageIcon = document.getElementById('messageIcon');
+            
+            messageText.textContent = message;
+            
+            // 設置圖標和顏色
+            switch (type) {
+                case 'success':
+                    messageIcon.className = 'fas fa-check-circle';
+                    messageBox.style.background = '#4caf50';
+                    break;
+                case 'error':
+                    messageIcon.className = 'fas fa-exclamation-circle';
+                    messageBox.style.background = '#f44336';
+                    break;
+                case 'warning':
+                    messageIcon.className = 'fas fa-exclamation-triangle';
+                    messageBox.style.background = '#ff9800';
+                    break;
+                default:
+                    messageIcon.className = 'fas fa-info-circle';
+                    messageBox.style.background = '#2196f3';
+            }
+            
+            messageBox.style.display = 'block';
+            
+            // 3秒後自動隱藏
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000);
+        }
+
+        // 顯示載入動畫
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        // 隱藏載入動畫
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const auth = new Auth();
+            
+            // 如果已登入，直接跳轉
+            if (auth.isAuthenticated()) {
+                window.location.href = '/game';
+                return;
+            }
+            
+            // 登入表單處理
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                if (!username || !password) {
+                    showMessage('請填寫用戶名和密碼', 'warning');
+                    return;
+                }
+                
+                showLoading();
+                
+                try {
+                    const result = await auth.login(username, password);
+                    
+                    if (result.success) {
+                        showMessage('登入成功！正在跳轉...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/game';
+                        }, 1000);
+                    } else {
+                        showMessage(result.error, 'error');
+                    }
+                } catch (error) {
+                    showMessage('登入過程中發生錯誤', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+            
+            // 回車鍵處理
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const activeElement = document.activeElement;
+                    if (activeElement.closest('#loginForm')) {
+                        loginForm.dispatchEvent(new Event('submit'));
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>

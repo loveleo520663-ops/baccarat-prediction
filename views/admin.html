@@ -112,8 +112,81 @@
                     <p>管理系統用戶和許可證</p>
                 </div>
 
+                <!-- 創建用戶表單 -->
+                <div class="create-user-form">
+                    <div class="form-header">
+                        <h2><i class="fas fa-user-plus"></i> 創建新用戶</h2>
+                        <p>為系統添加新用戶帳號</p>
+                    </div>
+                    
+                    <form id="createUserForm" class="user-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="newUsername">
+                                    <i class="fas fa-user"></i>
+                                    用戶名
+                                </label>
+                                <input type="text" id="newUsername" name="username" required 
+                                       placeholder="請輸入用戶名" minlength="3" maxlength="20">
+                                <small>3-20個字符，可包含字母、數字和下劃線</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newEmail">
+                                    <i class="fas fa-envelope"></i>
+                                    電子郵件 (選填)
+                                </label>
+                                <input type="email" id="newEmail" name="email" 
+                                       placeholder="請輸入電子郵件地址">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newPassword">
+                                    <i class="fas fa-lock"></i>
+                                    密碼
+                                </label>
+                                <input type="password" id="newPassword" name="password" required 
+                                       placeholder="請輸入密碼" minlength="6">
+                                <small>至少6個字符</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="confirmPassword">
+                                    <i class="fas fa-lock"></i>
+                                    確認密碼
+                                </label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" required 
+                                       placeholder="請再次輸入密碼">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="userLicenseKey">
+                                    <i class="fas fa-key"></i>
+                                    許可證金鑰 (選填)
+                                </label>
+                                <select id="userLicenseKey" name="licenseKey">
+                                    <option value="">不綁定許可證</option>
+                                </select>
+                                <small>選擇可用的許可證金鑰，或留空稍後綁定</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="action-btn secondary" onclick="resetCreateUserForm()">
+                                <i class="fas fa-undo"></i>
+                                重置表單
+                            </button>
+                            <button type="submit" class="action-btn primary">
+                                <i class="fas fa-user-plus"></i>
+                                創建用戶
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="table-container">
                     <div class="table-header">
+                        <h3>現有用戶列表</h3>
                         <div class="table-actions">
                             <button class="action-btn primary" onclick="refreshUsers()">
                                 <i class="fas fa-sync"></i>
