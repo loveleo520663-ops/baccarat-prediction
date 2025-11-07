@@ -531,7 +531,8 @@
         }
 
         .trend-chart {
-            height: 320px;
+            height: 280px;
+            min-height: 280px;
             background: 
                 radial-gradient(circle at 20% 30%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
                 radial-gradient(circle at 80% 70%, rgba(255, 71, 87, 0.03) 0%, transparent 50%),
@@ -539,13 +540,15 @@
                 linear-gradient(145deg, #0a0a0a 0%, #111111 20%, #1a1a1a 40%, #111111 60%, #0a0a0a 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             position: relative;
             box-shadow: 
                 0 20px 60px rgba(0, 0, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             overflow: hidden;
             backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
         }
 
         .trend-chart::before {
@@ -584,7 +587,9 @@
         #trendCanvas {
             width: 100%;
             height: 100%;
+            max-height: 240px;
             border-radius: 8px;
+            display: block;
         }
 
 
@@ -814,7 +819,8 @@
             }
             
             .trend-chart {
-                height: 200px;
+                height: 240px;
+                min-height: 240px;
                 padding: 15px;
             }
             
@@ -869,7 +875,9 @@
             }
             
             .trend-chart {
-                height: 180px;
+                height: 220px;
+                min-height: 220px;
+                padding: 12px;
             }
         }
 
@@ -992,7 +1000,9 @@
             }
             
             .trend-chart {
-                height: 160px;
+                height: 200px;
+                min-height: 200px;
+                padding: 10px;
             }
         }
 
@@ -1137,7 +1147,7 @@
                     <i class="fas fa-chart-line"></i> 莊閒和趨勢圖表
                 </div>
                 <div class="trend-chart" id="trendChart">
-                    <canvas id="trendCanvas" width="300" height="200"></canvas>
+                    <canvas id="trendCanvas"></canvas>
                 </div>
             </div>
 
@@ -1463,8 +1473,9 @@
                 if (!canvas) return;
                 
                 const ctx = canvas.getContext('2d');
-                const width = canvas.width;
-                const height = canvas.height;
+                const rect = canvas.getBoundingClientRect();
+                const width = rect.width;
+                const height = rect.height;
                 
                 // 清空畫布
                 ctx.clearRect(0, 0, width, height);
@@ -1953,8 +1964,26 @@
             if (!canvas) return;
             
             const container = canvas.parentElement;
-            canvas.width = container.clientWidth - 20;
-            canvas.height = 180;
+            const containerStyle = window.getComputedStyle(container);
+            const paddingTop = parseInt(containerStyle.paddingTop);
+            const paddingBottom = parseInt(containerStyle.paddingBottom);
+            const paddingLeft = parseInt(containerStyle.paddingLeft);
+            const paddingRight = parseInt(containerStyle.paddingRight);
+            
+            // 動態計算 canvas 尺寸
+            canvas.width = container.clientWidth - paddingLeft - paddingRight;
+            canvas.height = container.clientHeight - paddingTop - paddingBottom;
+            
+            // 設置高 DPI 顯示
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
             
             // 重新繪製圖表
             if (game) {
