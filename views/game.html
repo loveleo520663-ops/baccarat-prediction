@@ -399,6 +399,17 @@
         }
 
         /* 結果按鈕區域 */
+        /* 簡化的預測建議 */
+        .prediction-simple {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #d4af37;
+            text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+        }
+
         .result-buttons {
             display: flex;
             gap: 15px;
@@ -454,7 +465,7 @@
             gap: 20px;
         }
 
-        .prediction-section, .statistics-section, .trend-section {
+        .statistics-section, .trend-section {
             background: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
             border: 3px solid #d4af37;
             border-radius: 15px;
@@ -995,6 +1006,11 @@
                     </div>
                 </div>
 
+                <!-- 預測建議 -->
+                <div class="prediction-simple" id="predictionSimple">
+                    記錄至少5局後顯示預測
+                </div>
+
                 <!-- 結果按鈕 -->
                 <div class="result-buttons">
                     <button class="result-btn banker" id="bankerBtn">
@@ -1046,17 +1062,6 @@
 
         <!-- 右側：分析和走勢 -->
         <div class="analysis-panel">
-            <!-- 預測建議 -->
-            <div class="prediction-section">
-                <div class="section-title">
-                    <i class="fas fa-crystal-ball"></i> 預測建議
-                </div>
-                <div class="prediction-result" id="predictionResult">
-                    <div class="prediction-text">記錄至少5局後顯示預測</div>
-                    <div class="confidence">準確度將根據歷史數據計算</div>
-                </div>
-            </div>
-
             <!-- 統計資料 -->
             <div class="statistics-section">
                 <div class="section-title">
@@ -1307,10 +1312,7 @@
                     this.saveGameHistory();
                     this.updateDisplay();
                     this.resetCurrentRound();
-                    document.getElementById('predictionResult').innerHTML = `
-                        <div class="prediction-text">記錄至少5局後顯示預測</div>
-                        <div class="confidence">準確度將根據歷史數據計算</div>
-                    `;
+                    document.getElementById('predictionSimple').textContent = '記錄至少5局後顯示預測';
                 }
             }
 
@@ -1522,10 +1524,7 @@
                 const recent = this.gameHistory.slice(-10);
                 const analysis = this.analyzeTrends(recent);
                 
-                document.getElementById('predictionResult').innerHTML = `
-                    <div class="prediction-text">建議下注：<strong>${analysis.suggestion}</strong></div>
-                    <div class="confidence">信心度：${analysis.confidence}% | 基於${recent.length}局分析</div>
-                `;
+                document.getElementById('predictionSimple').textContent = `建議下注：${analysis.suggestion}`;
             }
 
             // 分析趨勢
