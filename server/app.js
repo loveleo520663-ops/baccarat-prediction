@@ -37,7 +37,8 @@ const initDatabase = async () => {
     }
 
     // 測試資料庫連接和表是否存在
-    const db = require('./database');
+    const database = require('./database');
+    const db = database.getDB();
     await new Promise(async (resolve, reject) => {
       db.get('SELECT COUNT(*) as count FROM users', async (err, result) => {
         if (err) {
@@ -149,7 +150,8 @@ app.use('/api/license', licenseRoutes);
 // 健康檢查路由
 app.get('/health', async (req, res) => {
   try {
-    const db = require('./database');
+    const database = require('./database');
+    const db = database.getDB();
     
     // 測試資料庫連接
     const dbStatus = await new Promise((resolve) => {
@@ -224,7 +226,8 @@ app.post('/force-rebuild-db', async (req, res) => {
 
 // 測試認證路由的資料庫連接
 app.get('/test-auth-db', (req, res) => {
-  const db = require('./database');
+  const database = require('./database');
+  const db = database.getDB();
   
   console.log('🧪 測試認證路由資料庫連接');
   
@@ -291,7 +294,8 @@ app.get('/check-db-file', (req, res) => {
 
 // 測試路由（無需認證）- 用於診斷
 app.get('/test/admin/users', (req, res) => {
-  const db = require('./database');
+  const database = require('./database');
+  const db = database.getDB();
   console.log('🧪 測試用戶 API 被調用');
   
   db.all(`
@@ -309,7 +313,8 @@ app.get('/test/admin/users', (req, res) => {
 });
 
 app.get('/test/admin/stats', (req, res) => {
-  const db = require('./database');
+  const database = require('./database');
+  const db = database.getDB();
   console.log('🧪 測試統計 API 被調用');
   
   db.serialize(() => {

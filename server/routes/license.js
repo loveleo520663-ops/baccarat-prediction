@@ -1,5 +1,6 @@
 const express = require('express');
-const db = require('../database');
+const database = require('../database');
+const db = database.getDB();
 const router = express.Router();
 // 驗證許可證金鑰
 router.post('/validate', (req, res) => {

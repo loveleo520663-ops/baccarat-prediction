@@ -1,7 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../database');
+const database = require('../database');
+const db = database.getDB();
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'baccarat-secret-key-2024';

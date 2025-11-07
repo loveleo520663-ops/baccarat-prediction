@@ -1,5 +1,6 @@
 const express = require('express');
-const db = require('../database');
+const database = require('../database');
+const db = database.getDB();
 const router = express.Router();
 // 百家樂預測算法
 class BaccaratPredictor {

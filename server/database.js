@@ -57,6 +57,9 @@ function reconnect() {
 }
 
 // 導出資料庫連接和重連方法
-module.exports = db;
-module.exports.reconnect = reconnect;
-module.exports.checkExists = checkDatabaseExists;
+module.exports = {
+  db: db,
+  reconnect: reconnect,
+  checkExists: checkDatabaseExists,
+  getDB: () => db
+};
