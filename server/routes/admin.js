@@ -15,7 +15,17 @@ router.get('/users', (req, res) => {
   }
 
   db.all(`
-    SELECT id, username, duration_days, expiration_date, is_active, created_at
+    SELECT 
+      id, 
+      username, 
+      duration_days, 
+      expiration_date,
+      expiration_date as license_expiry,
+      username as license_key,
+      is_active, 
+      created_at,
+      NULL as email,
+      NULL as last_login
     FROM users 
     ORDER BY created_at DESC
   `, (err, users) => {
@@ -281,6 +291,12 @@ router.get('/stats', (req, res) => {
           }
           stats.expiredUsers = result.expired;
           console.log('✅ 過期用戶數:', stats.expiredUsers);
+          
+          // 添加許可證統計 (與用戶統計相同，因為已合併)
+          stats.totalLicenseKeys = stats.totalUsers;
+          stats.activeLicenseKeys = stats.activeUsers;
+          stats.expiredLicenseKeys = stats.expiredUsers;
+          
           console.log('🎯 統計完成:', stats);
 
           res.json({ success: true, stats });
@@ -310,6 +326,73 @@ router.delete('/users/:id', (req, res) => {
     }
 
     res.json({ success: true, message: '用戶已刪除' });
+  });
+});
+
+// 獲取許可證列表 (實際上是用戶列表，因為已合併)
+router.get('/license/keys', (req, res) => {
+  console.log('🔍 管理員 API - 獲取許可證列表請求');
+  
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = (page - 1) * limit;
+
+  // 檢查資料庫連接
+  if (!db) {
+    console.error('❌ 資料庫未初始化');
+    return res.status(500).json({ error: '資料庫連接失敗', details: '資料庫未初始化' });
+  }
+
+  // 獲取總數
+  db.get('SELECT COUNT(*) as total FROM users', (err, countResult) => {
+    if (err) {
+      console.error('❌ 獲取許可證總數錯誤:', err);
+      return res.status(500).json({ 
+        error: '獲取許可證失敗', 
+        details: err.message
+      });
+    }
+
+    const total = countResult.total;
+    const totalPages = Math.ceil(total / limit);
+
+    // 獲取許可證數據 (用戶數據)
+    db.all(`
+      SELECT 
+        id,
+        username as license_holder,
+        username as key_code,
+        duration_days,
+        expiration_date,
+        is_active,
+        created_at,
+        CASE 
+          WHEN datetime(expiration_date) > datetime('now') THEN 0
+          ELSE 1
+        END as is_expired
+      FROM users 
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `, [limit, offset], (err, licenses) => {
+      if (err) {
+        console.error('❌ 獲取許可證數據錯誤:', err);
+        return res.status(500).json({ 
+          error: '獲取許可證失敗', 
+          details: err.message
+        });
+      }
+
+      console.log('✅ 成功獲取許可證，數量:', licenses ? licenses.length : 0);
+      
+      res.json({
+        success: true,
+        keys: licenses || [],
+        page,
+        totalPages,
+        total,
+        hasMore: page < totalPages
+      });
+    });
   });
 });
 
