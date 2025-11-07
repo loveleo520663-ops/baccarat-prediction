@@ -151,6 +151,13 @@
             <div id="usersResult" class="result" style="display: none;"></div>
         </div>
         
+        <!-- bcrypt 測試 -->
+        <div class="test-section">
+            <div class="test-title">🔐 密碼驗證測試</div>
+            <button class="btn btn-warning" onclick="testBcrypt()">測試 Bcrypt 驗證</button>
+            <div id="bcryptResult" class="result" style="display: none;"></div>
+        </div>
+        
         <!-- 系統狀態檢查 -->
         <div class="test-section">
             <div class="test-title">🏥 系統狀態</div>
@@ -295,6 +302,35 @@
                 }
             } catch (error) {
                 showResult('usersResult', `❌ 查詢錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        // bcrypt 測試
+        async function testBcrypt() {
+            showResult('bcryptResult', '測試中...', 'info');
+            
+            try {
+                const response = await fetch('/test-bcrypt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('bcryptResult', `✅ Bcrypt 測試成功
+                        用戶: ${result.user.username}
+                        密碼驗證: ${result.password_test.result ? '成功' : '失敗'}
+                        Hash 長度: ${result.password_test.hash_length}
+                        Hash 預覽: ${result.user.password_hash}`, 'success');
+                } else {
+                    showResult('bcryptResult', `❌ Bcrypt 測試失敗: ${result.error}
+                        詳情: ${result.details || '無'}`, 'error');
+                }
+            } catch (error) {
+                showResult('bcryptResult', `❌ 測試錯誤: ${error.message}`, 'error');
             }
         }
         

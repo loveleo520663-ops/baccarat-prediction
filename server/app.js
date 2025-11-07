@@ -289,6 +289,76 @@ app.post('/reset-admin-password', async (req, res) => {
   }
 });
 
+// 直接測試 bcrypt 驗證
+app.post('/test-bcrypt', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const database = require('./database');
+    const db = database.getDB();
+    
+    if (!db) {
+      return res.json({
+        success: false,
+        error: '資料庫連接失敗'
+      });
+    }
+    
+    // 查找 admin 用戶
+    db.get('SELECT * FROM users WHERE username = ?', ['admin'], async (err, user) => {
+      if (err) {
+        return res.json({
+          success: false,
+          error: '查詢用戶失敗',
+          details: err.message
+        });
+      }
+      
+      if (!user) {
+        return res.json({
+          success: false,
+          error: '找不到 admin 用戶'
+        });
+      }
+      
+      try {
+        // 測試密碼驗證
+        const isValid = await bcrypt.compare('password', user.password);
+        
+        res.json({
+          success: true,
+          user: {
+            id: user.id,
+            username: user.username,
+            password_hash: user.password.substring(0, 20) + '...',
+            is_active: user.is_active,
+            expiration_date: user.expiration_date
+          },
+          password_test: {
+            input: 'password',
+            result: isValid,
+            hash_length: user.password.length
+          }
+        });
+        
+      } catch (bcryptError) {
+        res.json({
+          success: false,
+          error: 'bcrypt 驗證失敗',
+          details: bcryptError.message,
+          user: user ? { username: user.username, hash: user.password.substring(0, 10) + '...' } : null
+        });
+      }
+    });
+    
+  } catch (error) {
+    res.json({
+      success: false,
+      error: '測試過程中發生錯誤',
+      details: error.message
+    });
+  }
+});
+
 // 測試認證路由的資料庫連接
 app.get('/test-auth-db', (req, res) => {
   const database = require('./database');
