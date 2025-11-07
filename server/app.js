@@ -196,12 +196,19 @@ app.post('/force-rebuild-db', async (req, res) => {
     
     console.log('✅ 資料庫重建完成');
     
+    // 重新連接資料庫
+    console.log('🔄 重新連接資料庫模塊...');
+    const database = require('./database');
+    if (database.reconnect) {
+      database.reconnect();
+    }
+    
     res.json({
       success: true,
       message: '資料庫重建成功',
       userCount: userCount,
       timestamp: new Date().toISOString(),
-      details: '資料庫已從零開始創建'
+      details: '資料庫已從零開始創建並重新連接'
     });
     
   } catch (error) {
@@ -213,6 +220,48 @@ app.post('/force-rebuild-db', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+// 測試認證路由的資料庫連接
+app.get('/test-auth-db', (req, res) => {
+  const db = require('./database');
+  
+  console.log('🧪 測試認證路由資料庫連接');
+  
+  db.get(`
+    SELECT id, username, password, is_active, expiration_date
+    FROM users 
+    WHERE username = ?
+  `, ['admin'], (err, user) => {
+    if (err) {
+      console.error('❌ 認證路由資料庫錯誤:', err);
+      return res.status(500).json({ 
+        error: '資料庫查詢失敗', 
+        details: err.message,
+        code: err.code 
+      });
+    }
+
+    if (!user) {
+      return res.json({ 
+        success: false,
+        message: 'admin 用戶不存在',
+        found: false
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'admin 用戶查找成功',
+      user: {
+        id: user.id,
+        username: user.username,
+        is_active: user.is_active,
+        expiration_date: user.expiration_date,
+        hasPassword: !!user.password
+      }
+    });
+  });
 });
 
 // 檢查資料庫文件是否存在
