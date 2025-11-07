@@ -22,34 +22,24 @@ router.get('/users', (req, res) => {
     res.json({ success: true, users });
   });
 
-  });
-
 // 創建用戶
 router.post('/users/create', async (req, res) => {
-  const { username, email, password, licenseKey } = req.body;
+  const { username, password } = req.body;
 
   // 驗證輸入
-  if (!username || !email || !password || !licenseKey) {
+  if (!username || !password) {
     return res.status(400).json({ 
-      error: '所有欄位都是必填的',
+      error: '帳號和密碼都是必填的',
       details: {
-        username: !username ? '用戶名稱是必填的' : null,
-        email: !email ? 'Email 是必填的' : null,
-        password: !password ? '密碼是必填的' : null,
-        licenseKey: !licenseKey ? '許可證金鑰是必填的' : null
+        username: !username ? '帳號是必填的' : null,
+        password: !password ? '密碼是必填的' : null
       }
     });
   }
 
   // 驗證用戶名格式
   if (username.length < 3) {
-    return res.status(400).json({ error: '用戶名稱至少需要 3 個字符' });
-  }
-
-  // 驗證 email 格式
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: 'Email 格式不正確' });
+    return res.status(400).json({ error: '帳號至少需要 3 個字符' });
   }
 
   // 驗證密碼強度
@@ -60,65 +50,40 @@ router.post('/users/create', async (req, res) => {
   try {
     // 檢查用戶名是否已存在
     const existingUser = await new Promise((resolve, reject) => {
-      db.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email], (err, user) => {
+      db.get('SELECT id FROM users WHERE username = ?', [username], (err, user) => {
         if (err) reject(err);
         else resolve(user);
       });
     });
 
     if (existingUser) {
-      return res.status(409).json({ error: '用戶名稱或 Email 已存在' });
+      return res.status(409).json({ error: '帳號已存在' });
     }
 
-    // 驗證許可證金鑰
-    const licenseKeyData = await new Promise((resolve, reject) => {
-      db.get('SELECT id, duration_days, is_used FROM license_keys WHERE key_code = ?', [licenseKey], (err, key) => {
-        if (err) reject(err);
-        else resolve(key);
-      });
-    });
+    // 加密密碼
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    if (!licenseKeyData) {
-      return res.status(400).json({ error: '無效的許可證金鑰' });
-    }
-
-    if (licenseKeyData.is_used) {
-      return res.status(400).json({ error: '此許可證金鑰已被使用' });
-    }
-
-    // 計算許可證到期時間
-    const licenseExpiry = new Date();
-    licenseExpiry.setDate(licenseExpiry.getDate() + licenseKeyData.duration_days);
+    // 設置默認到期日期 (30天)
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 30);
 
     // 創建用戶
     const userId = await new Promise((resolve, reject) => {
       db.run(`
-        INSERT INTO users (username, email, password, license_key, license_expiry, role, is_active, created_at)
-        VALUES (?, ?, ?, ?, ?, 'user', 1, datetime('now'))
-      `, [username, email, password, licenseKey, licenseExpiry.toISOString()], function(err) {
+        INSERT INTO users (username, password_hash, expiration_date, role, is_active, created_at)
+        VALUES (?, ?, ?, 'user', 1, datetime('now'))
+      `, [username, hashedPassword, expirationDate.toISOString()], function(err) {
         if (err) reject(err);
         else resolve(this.lastID);
       });
     });
 
-    // 標記許可證金鑰為已使用
-    await new Promise((resolve, reject) => {
-      db.run('UPDATE license_keys SET is_used = 1, used_by = ?, used_at = datetime("now") WHERE id = ?', 
-        [userId, licenseKeyData.id], (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-    });
-
     // 獲取新創建的用戶資訊
     const newUser = await new Promise((resolve, reject) => {
       db.get(`
-        SELECT u.id, u.username, u.email, u.role, u.license_key, 
-               u.license_expiry, u.created_at, u.is_active,
-               lk.duration_days
-        FROM users u
-        LEFT JOIN license_keys lk ON u.license_key = lk.key_code
-        WHERE u.id = ?
+        SELECT id, username, role, expiration_date, created_at, is_active
+        FROM users WHERE id = ?
       `, [userId], (err, user) => {
         if (err) reject(err);
         else resolve(user);
@@ -171,7 +136,7 @@ router.post('/license/generate', (req, res) => {
     });
   });
 
-  });
+});
 
 // 獲取許可證金鑰列表
 router.get('/license/keys', (req, res) => {
@@ -208,7 +173,7 @@ router.get('/license/keys', (req, res) => {
     });
   });
 
-  });
+});
 
 // 禁用/啟用用戶
 router.put('/users/:id/toggle', (req, res) => {
@@ -240,7 +205,7 @@ router.put('/users/:id/toggle', (req, res) => {
     });
   });
 
-  });
+});
 
 // 延長用戶許可證
 router.put('/users/:id/extend-license', (req, res) => {
@@ -283,7 +248,7 @@ router.put('/users/:id/extend-license', (req, res) => {
     });
   });
 
-  });
+});
 
 // 獲取系統統計
 router.get('/stats', (req, res) => {
@@ -333,7 +298,7 @@ router.get('/stats', (req, res) => {
     });
   });
 
-  });
+});
 
 // 刪除許可證金鑰
 router.delete('/license/:id', (req, res) => {
@@ -362,7 +327,6 @@ router.delete('/license/:id', (req, res) => {
       res.json({ success: true, message: '許可證金鑰已刪除' });
     });
   });
-
-  });
+});
 
 module.exports = router;
