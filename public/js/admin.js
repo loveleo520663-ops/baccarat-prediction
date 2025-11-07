@@ -820,9 +820,245 @@ class UserCreator {
     }
 }
 
-// 初始化用戶創建器
+// 帳號密碼生成和複製功能
+class AccountGenerator {
+    constructor() {
+        this.usernameField = document.getElementById('newUsername');
+        this.passwordField = document.getElementById('newPassword');
+    }
+
+    // 生成隨機用戶名
+    generateUsername() {
+        const prefixes = ['user', 'player', 'guest', 'member', 'vip'];
+        const numbers = Math.floor(Math.random() * 9000) + 1000; // 1000-9999
+        const letters = this.generateRandomString(2, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        
+        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        const username = `${prefix}${numbers}${letters}`;
+        
+        this.usernameField.value = username;
+        this.showFieldUpdate(this.usernameField);
+        return username;
+    }
+
+    // 生成隨機密碼
+    generatePassword() {
+        const length = 12;
+        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const numbers = '0123456789';
+        const symbols = '!@#$%^&*';
+        
+        const allChars = lowercase + uppercase + numbers + symbols;
+        let password = '';
+        
+        // 確保包含各類字符
+        password += this.getRandomChar(lowercase);
+        password += this.getRandomChar(uppercase);
+        password += this.getRandomChar(numbers);
+        password += this.getRandomChar(symbols);
+        
+        // 填充剩餘長度
+        for (let i = 4; i < length; i++) {
+            password += this.getRandomChar(allChars);
+        }
+        
+        // 打亂順序
+        password = password.split('').sort(() => Math.random() - 0.5).join('');
+        
+        this.passwordField.value = password;
+        this.showFieldUpdate(this.passwordField);
+        return password;
+    }
+
+    // 生成隨機字符串
+    generateRandomString(length, chars) {
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    // 獲取隨機字符
+    getRandomChar(chars) {
+        return chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // 複製帳號到剪貼板
+    async copyUsername() {
+        const username = this.usernameField.value;
+        if (!username) {
+            this.showMessage('請先生成或輸入帳號', 'warning');
+            return;
+        }
+        
+        try {
+            await navigator.clipboard.writeText(username);
+            this.showCopySuccess('帳號已複製到剪貼板');
+        } catch (err) {
+            this.fallbackCopy(username);
+        }
+    }
+
+    // 複製密碼到剪貼板
+    async copyPassword() {
+        const password = this.passwordField.value;
+        if (!password) {
+            this.showMessage('請先生成或輸入密碼', 'warning');
+            return;
+        }
+        
+        try {
+            await navigator.clipboard.writeText(password);
+            this.showCopySuccess('密碼已複製到剪貼板');
+        } catch (err) {
+            this.fallbackCopy(password);
+        }
+    }
+
+    // 複製帳號和密碼
+    async copyAll() {
+        const username = this.usernameField.value;
+        const password = this.passwordField.value;
+        
+        if (!username || !password) {
+            this.showMessage('請先生成帳號和密碼', 'warning');
+            return;
+        }
+        
+        const accountInfo = `帳號: ${username}\n密碼: ${password}`;
+        
+        try {
+            await navigator.clipboard.writeText(accountInfo);
+            this.showCopySuccess('帳號密碼已複製到剪貼板');
+        } catch (err) {
+            this.fallbackCopy(accountInfo);
+        }
+    }
+
+    // 一鍵生成帳號和密碼
+    generateAll() {
+        this.generateUsername();
+        this.generatePassword();
+        this.showMessage('已生成新的帳號和密碼', 'success');
+    }
+
+    // 切換密碼顯示/隱藏
+    togglePasswordVisibility() {
+        const icon = document.getElementById('passwordToggleIcon');
+        
+        if (this.passwordField.type === 'password') {
+            this.passwordField.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            this.passwordField.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    }
+
+    // 備用複製方法
+    fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+            document.execCommand('copy');
+            this.showCopySuccess('內容已複製到剪貼板');
+        } catch (err) {
+            this.showMessage('複製失敗，請手動選擇複製', 'error');
+        }
+        
+        document.body.removeChild(textarea);
+    }
+
+    // 顯示複製成功提示
+    showCopySuccess(message) {
+        // 移除現有提示
+        const existing = document.querySelector('.copy-success');
+        if (existing) {
+            existing.remove();
+        }
+        
+        const successDiv = document.createElement('div');
+        successDiv.className = 'copy-success';
+        successDiv.innerHTML = `<i class="fas fa-check"></i> ${message}`;
+        
+        document.body.appendChild(successDiv);
+        
+        setTimeout(() => {
+            successDiv.remove();
+        }, 3000);
+    }
+
+    // 顯示字段更新效果
+    showFieldUpdate(field) {
+        field.style.background = 'rgba(72, 187, 120, 0.1)';
+        field.style.borderColor = '#48bb78';
+        
+        setTimeout(() => {
+            field.style.background = '';
+            field.style.borderColor = '';
+        }, 1000);
+    }
+
+    // 顯示消息
+    showMessage(message, type = 'info') {
+        if (window.messageBox) {
+            window.messageBox[type](message);
+        }
+    }
+}
+
+// 全局函數
+function generateUsername() {
+    if (window.accountGenerator) {
+        window.accountGenerator.generateUsername();
+    }
+}
+
+function generatePassword() {
+    if (window.accountGenerator) {
+        window.accountGenerator.generatePassword();
+    }
+}
+
+function copyUsername() {
+    if (window.accountGenerator) {
+        window.accountGenerator.copyUsername();
+    }
+}
+
+function copyPassword() {
+    if (window.accountGenerator) {
+        window.accountGenerator.copyPassword();
+    }
+}
+
+function generateAll() {
+    if (window.accountGenerator) {
+        window.accountGenerator.generateAll();
+    }
+}
+
+function copyAll() {
+    if (window.accountGenerator) {
+        window.accountGenerator.copyAll();
+    }
+}
+
+function togglePasswordVisibility() {
+    if (window.accountGenerator) {
+        window.accountGenerator.togglePasswordVisibility();
+    }
+}
+
+// 初始化
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('createUserForm')) {
         window.userCreator = new UserCreator();
+        window.accountGenerator = new AccountGenerator();
     }
 });
