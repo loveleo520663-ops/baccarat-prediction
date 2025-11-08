@@ -35,10 +35,15 @@ const initDatabase = () => {
 const createTables = async () => {
   const pool = initDatabase();
   if (!pool) {
-    throw new Error('資料庫連接失敗');
+    console.warn('⚠️ 資料庫連接池未初始化,跳過資料表建立');
+    return false;
   }
 
   try {
+    // 測試連接
+    await pool.query('SELECT NOW()');
+    console.log('✅ 資料庫連接測試成功');
+    
     // 建立用戶表
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -94,9 +99,11 @@ const createTables = async () => {
     }
 
     console.log('✅ 資料表建立完成');
+    return true;
   } catch (error) {
-    console.error('❌ 建立資料表失敗:', error);
-    throw error;
+    console.error('❌ 建立資料表失敗:', error.message);
+    console.log('💡 提示: 請檢查 DATABASE_URL 環境變數');
+    return false;
   }
 };
 
