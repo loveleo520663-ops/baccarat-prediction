@@ -2,7 +2,7 @@
   "name": "baccarat-prediction-system",
   "version": "1.0.0",
   "description": "專業百家樂預測系統",
-  "main": "server/app.js",
+  "main": "server-complete.js",
   "scripts": {
     "start": "node server-complete.js"
   },
