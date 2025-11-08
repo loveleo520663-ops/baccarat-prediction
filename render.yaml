@@ -14,8 +14,8 @@ services:
     plan: free
     region: singapore
     buildCommand: npm ci
-    startCommand: node pg-server.js
-    healthCheckPath: /health
+    startCommand: node memory-server.js
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
