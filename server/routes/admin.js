@@ -1,20 +1,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const database = require('../database');
+const db = database.getDB();
+
 const router = express.Router();
 
-// 獲取所有用戶 (PostgreSQL版本)
+// 獲取所有用戶
 router.get('/users', (req, res) => {
-  console.log('🔍 管理員 API - 獲取用戶列表請求');
+  console.log('🔍 管理員 API - 獲取用戶請求');
   
   // 檢查資料庫連接
-  if (!req.app.locals.db) {
-    console.error('❌ 資料庫連接失敗');
+  if (!db) {
+    console.error('❌ 資料庫未初始化');
     return res.status(500).json({ error: '資料庫連接失敗', details: '資料庫未初始化' });
   }
 
-  const db = req.app.locals.db;
-  
-  db.query(`
+  db.all(`
     SELECT 
       id, 
       username, 
@@ -28,307 +29,336 @@ router.get('/users', (req, res) => {
       NULL as last_login
     FROM users 
     ORDER BY created_at DESC
-  `, (err, result) => {
+  `, (err, users) => {
     if (err) {
-      console.error('❌ 獲取用戶列表錯誤:', err);
+      console.error('❌ 獲取用戶錯誤:', err);
       return res.status(500).json({ 
         error: '獲取用戶失敗', 
-        details: err.message 
+        details: err.message,
+        code: err.code,
+        errno: err.errno
       });
     }
 
-    console.log('✅ 成功獲取用戶列表');
-    res.json(result.rows);
+    console.log('✅ 成功獲取用戶，數量:', users ? users.length : 0);
+    res.json({ success: true, users: users || [] });
   });
 });
 
-// 創建新用戶 (PostgreSQL版本)
-router.post('/create-user', async (req, res) => {
-  console.log('👤 管理員 API - 創建用戶請求');
-  
-  const { username, password, duration } = req.body;
-  
-  if (!username || !password || !duration) {
-    console.log('❌ 缺少必要參數');
-    return res.status(400).json({ error: '缺少必要參數' });
+// 創建用戶 (合併註冊和金鑰功能)
+router.post('/users/create', async (req, res) => {
+  const { username, password, durationDays } = req.body;
+
+  // 驗證輸入
+  if (!username || !password || !durationDays) {
+    return res.status(400).json({ 
+      error: '帳號、密碼和有效期都是必填的',
+      details: {
+        username: !username ? '帳號是必填的' : null,
+        password: !password ? '密碼是必填的' : null,
+        durationDays: !durationDays ? '有效期是必填的' : null
+      }
+    });
   }
 
-  const db = req.app.locals.db;
+  // 驗證用戶名格式
+  if (username.length < 3) {
+    return res.status(400).json({ error: '帳號至少需要 3 個字符' });
+  }
+
+  // 驗證密碼強度
+  if (password.length < 6) {
+    return res.status(400).json({ error: '密碼至少需要 6 個字符' });
+  }
+
+  // 驗證有效期選項
+  const validDurations = [1, 7, 30, 365, -1]; // -1 表示永久
+  if (!validDurations.includes(parseInt(durationDays))) {
+    return res.status(400).json({ error: '無效的有效期選項' });
+  }
 
   try {
-    // 檢查用戶是否存在
-    const existingUser = await new Promise((resolve, reject) => {
-      db.query('SELECT id FROM users WHERE username = $1', [username], (err, result) => {
-        if (err) reject(err);
-        else resolve(result.rows[0]);
-      });
-    });
-
-    if (existingUser) {
-      console.log('❌ 用戶名已存在:', username);
-      return res.status(400).json({ error: '用戶名已存在' });
-    }
-
-    // 加密密碼
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + parseInt(duration));
-
-    // 插入新用戶
-    db.query(`
-      INSERT INTO users (username, password, role, is_active, duration_days, expiration_date, created_at) 
-      VALUES ($1, $2, 'user', true, $3, $4, NOW())
-    `, [username, hashedPassword, duration, expirationDate], (err, result) => {
+    // 檢查用戶名是否已存在
+    db.get('SELECT id FROM users WHERE username = ?', [username], async (err, existingUser) => {
       if (err) {
-        console.error('❌ 創建用戶錯誤:', err);
-        return res.status(500).json({ 
-          error: '創建用戶失敗', 
-          details: err.message 
-        });
+        console.error('檢查用戶錯誤:', err);
+        return res.status(500).json({ error: '檢查用戶時發生錯誤' });
       }
 
-      // 獲取剛創建的用戶信息
-      db.query(`
-        SELECT id, username, duration_days, expiration_date, is_active, created_at 
-        FROM users WHERE username = $1
-      `, [username], (err, result) => {
-        if (err) {
-          console.error('❌ 獲取新用戶信息錯誤:', err);
-          return res.status(500).json({ 
-            error: '獲取用戶信息失敗', 
-            details: err.message 
-          });
+      if (existingUser) {
+        return res.status(409).json({ error: '帳號已存在' });
+      }
+
+      try {
+        // 加密密碼
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 計算到期日期
+        let expirationDate;
+        if (parseInt(durationDays) === -1) {
+          // 永久帳號設置為 100 年後
+          expirationDate = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
+        } else {
+          expirationDate = new Date(Date.now() + parseInt(durationDays) * 24 * 60 * 60 * 1000);
         }
 
-        console.log('✅ 用戶創建成功:', username);
-        res.json({
-          message: '用戶創建成功',
-          user: result.rows[0]
+        // 創建用戶
+        db.run(`
+          INSERT INTO users (username, password, duration_days, expiration_date)
+          VALUES (?, ?, ?, ?)
+        `, [username, hashedPassword, parseInt(durationDays), expirationDate.toISOString()], function(err) {
+          if (err) {
+            console.error('創建用戶錯誤:', err);
+            return res.status(500).json({ error: '創建用戶失敗' });
+          }
+
+          // 獲取創建的用戶資訊
+          db.get(`
+            SELECT id, username, duration_days, expiration_date, is_active, created_at
+            FROM users WHERE id = ?
+          `, [this.lastID], (err, user) => {
+            if (err) {
+              console.error('獲取用戶資訊錯誤:', err);
+              return res.status(500).json({ error: '獲取用戶資訊失敗' });
+            }
+
+            res.status(201).json({
+              success: true,
+              message: '用戶創建成功',
+              user: user
+            });
+          });
         });
-      });
+
+      } catch (hashError) {
+        console.error('密碼加密錯誤:', hashError);
+        res.status(500).json({ error: '密碼加密失敗' });
+      }
     });
 
   } catch (error) {
-    console.error('❌ 創建用戶過程錯誤:', error);
-    res.status(500).json({ 
-      error: '創建用戶失敗', 
-      details: error.message 
-    });
+    console.error('創建用戶過程錯誤:', error);
+    res.status(500).json({ error: '創建用戶失敗' });
   }
 });
 
-// 切換用戶狀態 (PostgreSQL版本)
-router.post('/toggle-user-status', (req, res) => {
-  console.log('🔄 管理員 API - 切換用戶狀態請求');
+// 生成隨機帳號
+router.get('/generate/username', (req, res) => {
+  const adjectives = ['Lucky', 'Smart', 'Fast', 'Cool', 'Pro', 'Elite', 'Super', 'Mega', 'Ultra', 'Prime'];
+  const nouns = ['Player', 'Gamer', 'User', 'Winner', 'Master', 'King', 'Queen', 'Star', 'Hero', 'Legend'];
+  const numbers = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   
-  const { userId } = req.body;
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
   
-  if (!userId) {
-    return res.status(400).json({ error: '缺少用戶ID' });
+  const username = `${adjective}${noun}${numbers}`;
+  
+  res.json({ success: true, username });
+});
+
+// 生成隨機密碼
+router.get('/generate/password', (req, res) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let password = '';
+  
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+  
+  res.json({ success: true, password });
+});
 
-  const db = req.app.locals.db;
+// 禁用/啟用用戶
+router.put('/users/:id/toggle', (req, res) => {
+  const userId = parseInt(req.params.id);
 
-  // 獲取當前狀態
-  db.query('SELECT is_active FROM users WHERE id = $1', [userId], (err, result) => {
+  db.get('SELECT is_active FROM users WHERE id = ?', [userId], (err, user) => {
     if (err) {
-      console.error('❌ 獲取用戶狀態錯誤:', err);
-      return res.status(500).json({ 
-        error: '獲取用戶狀態失敗', 
-        details: err.message 
-      });
+      console.error('查詢用戶錯誤:', err);
+      return res.status(500).json({ error: '查詢用戶失敗' });
     }
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({ error: '用戶不存在' });
     }
 
-    const currentStatus = result.rows[0].is_active;
-    const newStatus = !currentStatus;
+    const newStatus = user.is_active ? 0 : 1;
 
-    // 更新狀態
-    db.query('UPDATE users SET is_active = $1 WHERE id = $2', [newStatus, userId], (err) => {
+    db.run('UPDATE users SET is_active = ? WHERE id = ?', [newStatus, userId], (err) => {
       if (err) {
-        console.error('❌ 更新用戶狀態錯誤:', err);
-        return res.status(500).json({ 
-          error: '更新用戶狀態失敗', 
-          details: err.message 
-        });
+        console.error('更新用戶狀態錯誤:', err);
+        return res.status(500).json({ error: '更新用戶狀態失敗' });
       }
 
-      console.log('✅ 用戶狀態更新成功');
-      res.json({ 
-        message: '用戶狀態更新成功',
-        newStatus: newStatus
+      res.json({
+        success: true,
+        message: `用戶已${newStatus ? '啟用' : '禁用'}`,
+        is_active: newStatus
       });
     });
   });
 });
 
-// 延期用戶 (PostgreSQL版本)
-router.post('/extend-user', (req, res) => {
-  console.log('⏰ 管理員 API - 延期用戶請求');
-  
-  const { userId, extensionDays } = req.body;
-  
-  if (!userId || !extensionDays) {
-    return res.status(400).json({ error: '缺少必要參數' });
+// 延長用戶許可證
+router.put('/users/:id/extend', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const { days } = req.body;
+
+  if (!days || days <= 0) {
+    return res.status(400).json({ error: '請輸入有效的延長天數' });
   }
 
-  const db = req.app.locals.db;
-
-  // 獲取當前到期日期
-  db.query('SELECT expiration_date FROM users WHERE id = $1', [userId], (err, result) => {
+  db.get('SELECT expiration_date FROM users WHERE id = ?', [userId], (err, user) => {
     if (err) {
-      console.error('❌ 獲取用戶到期日期錯誤:', err);
-      return res.status(500).json({ 
-        error: '獲取用戶信息失敗', 
-        details: err.message 
-      });
+      console.error('查詢用戶錯誤:', err);
+      return res.status(500).json({ error: '查詢用戶失敗' });
     }
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({ error: '用戶不存在' });
     }
 
-    const currentExpiry = new Date(result.rows[0].expiration_date);
-    const now = new Date();
+    // 計算新的到期時間
+    let currentExpiry = user.expiration_date ? new Date(user.expiration_date) : new Date();
+    if (currentExpiry < new Date()) {
+      currentExpiry = new Date(); // 如果已過期，從今天開始計算
+    }
     
-    // 如果已過期，從現在開始計算；否則從原到期日期延長
-    const baseDate = currentExpiry < now ? now : currentExpiry;
-    baseDate.setDate(baseDate.getDate() + parseInt(extensionDays));
+    currentExpiry.setDate(currentExpiry.getDate() + parseInt(days));
 
-    // 更新到期日期
-    db.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [baseDate, userId], (err) => {
+    db.run('UPDATE users SET expiration_date = ? WHERE id = ?', [currentExpiry.toISOString(), userId], (err) => {
       if (err) {
-        console.error('❌ 延期用戶錯誤:', err);
-        return res.status(500).json({ 
-          error: '延期用戶失敗', 
-          details: err.message 
-        });
+        console.error('延長許可證錯誤:', err);
+        return res.status(500).json({ error: '延長許可證失敗' });
       }
 
-      console.log('✅ 用戶延期成功');
-      res.json({ 
-        message: '用戶延期成功',
-        newExpirationDate: baseDate
+      res.json({
+        success: true,
+        message: `許可證已延長 ${days} 天`,
+        new_expiry: currentExpiry.toISOString()
       });
     });
   });
 });
 
-// 獲取統計信息 (PostgreSQL版本)
+// 獲取系統統計
 router.get('/stats', (req, res) => {
-  console.log('📊 管理員 API - 獲取統計信息請求');
+  console.log('🔍 管理員 API - 獲取統計請求');
   
-  const db = req.app.locals.db;
-  
-  // 獲取總用戶數
-  db.query('SELECT COUNT(*) as total FROM users', (err, result) => {
-    if (err) {
-      console.error('❌ 獲取總用戶數錯誤:', err);
-      return res.status(500).json({ 
-        error: '獲取統計信息失敗', 
-        details: err.message 
-      });
-    }
+  // 檢查資料庫連接
+  if (!db) {
+    console.error('❌ 資料庫未初始化');
+    return res.status(500).json({ error: '資料庫連接失敗', details: '資料庫未初始化' });
+  }
 
-    const totalUsers = parseInt(result.rows[0].total);
+  db.serialize(() => {
+    let stats = {};
 
-    // 獲取活躍用戶數
-    db.query('SELECT COUNT(*) as active FROM users WHERE is_active = true', (err, result) => {
+    db.get('SELECT COUNT(*) as total FROM users', (err, result) => {
       if (err) {
-        console.error('❌ 獲取活躍用戶數錯誤:', err);
+        console.error('❌ 總用戶統計錯誤:', err);
         return res.status(500).json({ 
-          error: '獲取統計信息失敗', 
-          details: err.message 
+          error: '獲取統計失敗', 
+          details: err.message,
+          code: err.code,
+          step: 'totalUsers'
         });
       }
+      stats.totalUsers = result.total;
+      console.log('✅ 總用戶數:', stats.totalUsers);
 
-      const activeUsers = parseInt(result.rows[0].active);
-
-      // 獲取過期用戶數
-      db.query('SELECT COUNT(*) as expired FROM users WHERE expiration_date < NOW()', (err, result) => {
+      db.get('SELECT COUNT(*) as active FROM users WHERE is_active = 1', (err, result) => {
         if (err) {
-          console.error('❌ 獲取過期用戶數錯誤:', err);
+          console.error('❌ 活躍用戶統計錯誤:', err);
           return res.status(500).json({ 
-            error: '獲取統計信息失敗', 
-            details: err.message 
+            error: '獲取統計失敗', 
+            details: err.message,
+            code: err.code,
+            step: 'activeUsers'
           });
         }
+        stats.activeUsers = result.active;
+        console.log('✅ 活躍用戶數:', stats.activeUsers);
 
-        const expiredUsers = parseInt(result.rows[0].expired);
+        db.get('SELECT COUNT(*) as expired FROM users WHERE datetime(expiration_date) < datetime("now")', (err, result) => {
+          if (err) {
+            console.error('❌ 過期用戶統計錯誤:', err);
+            return res.status(500).json({ 
+              error: '獲取統計失敗', 
+              details: err.message,
+              code: err.code,
+              step: 'expiredUsers'
+            });
+          }
+          stats.expiredUsers = result.expired;
+          console.log('✅ 過期用戶數:', stats.expiredUsers);
+          
+          // 添加許可證統計 (與用戶統計相同，因為已合併)
+          stats.totalLicenseKeys = stats.totalUsers;
+          stats.activeLicenseKeys = stats.activeUsers;
+          stats.expiredLicenseKeys = stats.expiredUsers;
+          
+          console.log('🎯 統計完成:', stats);
 
-        const stats = {
-          totalUsers,
-          activeUsers,
-          inactiveUsers: totalUsers - activeUsers,
-          expiredUsers,
-          validUsers: totalUsers - expiredUsers
-        };
-
-        console.log('✅ 統計信息獲取成功:', stats);
-        res.json(stats);
+          res.json({ success: true, stats });
+        });
       });
     });
   });
 });
 
-// 刪除用戶 (PostgreSQL版本)
-router.delete('/delete-user/:userId', (req, res) => {
-  console.log('🗑️ 管理員 API - 刪除用戶請求');
-  
-  const userId = req.params.userId;
-  
-  if (!userId) {
-    return res.status(400).json({ error: '缺少用戶ID' });
+// 刪除用戶
+router.delete('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id);
+
+  // 不允許刪除管理員帳號
+  if (userId === 1) {
+    return res.status(403).json({ error: '無法刪除管理員帳號' });
   }
 
-  const db = req.app.locals.db;
-
-  db.query('DELETE FROM users WHERE id = $1', [userId], (err, result) => {
+  db.run('DELETE FROM users WHERE id = ?', [userId], function(err) {
     if (err) {
-      console.error('❌ 刪除用戶錯誤:', err);
-      return res.status(500).json({ 
-        error: '刪除用戶失敗', 
-        details: err.message 
-      });
+      console.error('刪除用戶錯誤:', err);
+      return res.status(500).json({ error: '刪除用戶失敗' });
     }
 
-    if (result.rowCount === 0) {
+    if (this.changes === 0) {
       return res.status(404).json({ error: '用戶不存在' });
     }
 
-    console.log('✅ 用戶刪除成功');
-    res.json({ message: '用戶刪除成功' });
+    res.json({ success: true, message: '用戶已刪除' });
   });
 });
 
-// 獲取許可證列表 (PostgreSQL版本)
-router.get('/licenses', (req, res) => {
+// 獲取許可證列表 (實際上是用戶列表，因為已合併)
+router.get('/license/keys', (req, res) => {
   console.log('🔍 管理員 API - 獲取許可證列表請求');
   
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 20;
   const offset = (page - 1) * limit;
 
-  const db = req.app.locals.db;
+  // 檢查資料庫連接
+  if (!db) {
+    console.error('❌ 資料庫未初始化');
+    return res.status(500).json({ error: '資料庫連接失敗', details: '資料庫未初始化' });
+  }
 
   // 獲取總數
-  db.query('SELECT COUNT(*) as total FROM users', (err, result) => {
+  db.get('SELECT COUNT(*) as total FROM users', (err, countResult) => {
     if (err) {
-      console.error('❌ 獲取許可證數量錯誤:', err);
+      console.error('❌ 獲取許可證總數錯誤:', err);
       return res.status(500).json({ 
         error: '獲取許可證失敗', 
-        details: err.message 
+        details: err.message
       });
     }
 
-    const total = parseInt(result.rows[0].total);
+    const total = countResult.total;
     const totalPages = Math.ceil(total / limit);
 
     // 獲取許可證數據 (用戶數據)
-    db.query(`
+    db.all(`
       SELECT 
         id,
         username as license_holder,
@@ -338,13 +368,13 @@ router.get('/licenses', (req, res) => {
         is_active,
         created_at,
         CASE 
-          WHEN expiration_date > NOW() THEN false
-          ELSE true
+          WHEN datetime(expiration_date) > datetime('now') THEN 0
+          ELSE 1
         END as is_expired
       FROM users 
       ORDER BY created_at DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset], (err, result) => {
+      LIMIT ? OFFSET ?
+    `, [limit, offset], (err, licenses) => {
       if (err) {
         console.error('❌ 獲取許可證數據錯誤:', err);
         return res.status(500).json({ 
@@ -353,17 +383,15 @@ router.get('/licenses', (req, res) => {
         });
       }
 
-      const licenses = result.rows;
-
-      console.log('✅ 許可證列表獲取成功');
+      console.log('✅ 成功獲取許可證，數量:', licenses ? licenses.length : 0);
+      
       res.json({
-        licenses: licenses,
-        pagination: {
-          currentPage: page,
-          totalPages: totalPages,
-          totalItems: total,
-          itemsPerPage: limit
-        }
+        success: true,
+        keys: licenses || [],
+        page,
+        totalPages,
+        total,
+        hasMore: page < totalPages
       });
     });
   });

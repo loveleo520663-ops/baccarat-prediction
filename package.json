@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/package.json",
   "name": "baccarat-prediction-system",
   "version": "1.0.0",
   "description": "專業百家樂預測系統",
@@ -11,6 +10,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "sqlite3": "^5.1.6",
+    "pg": "^8.11.3",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "cors": "^2.8.5",
