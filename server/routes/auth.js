@@ -28,11 +28,24 @@ router.post('/login', async (req, res) => {
     console.log('✅ 資料庫連接正常');
 
     // 從資料庫查找用戶
-    const user = await currentDb.get(`
-      SELECT id, username, password, is_active, expiration_date
-      FROM users 
-      WHERE username = ?
-    `, [username]);
+    let sql, params;
+    if (database.dbType === 'postgres') {
+      sql = `
+        SELECT id, username, password, is_active, expiration_date
+        FROM users 
+        WHERE username = $1
+      `;
+      params = [username];
+    } else {
+      sql = `
+        SELECT id, username, password, is_active, expiration_date
+        FROM users 
+        WHERE username = ?
+      `;
+      params = [username];
+    }
+    
+    const user = await currentDb.get(sql, params);
 
     if (!user) {
       console.log('❌ 用戶不存在:', username);
@@ -119,7 +132,16 @@ router.post('/register', async (req, res) => {
     }
 
     // 檢查用戶是否已存在
-    const existingUser = await currentDb.get('SELECT id FROM users WHERE username = ?', [username]);
+    let checkSql, checkParams;
+    if (database.dbType === 'postgres') {
+      checkSql = 'SELECT id FROM users WHERE username = $1';
+      checkParams = [username];
+    } else {
+      checkSql = 'SELECT id FROM users WHERE username = ?';
+      checkParams = [username];
+    }
+    
+    const existingUser = await currentDb.get(checkSql, checkParams);
     if (existingUser) {
       return res.status(400).json({ error: '用戶名已存在' });
     }
@@ -135,15 +157,22 @@ router.post('/register', async (req, res) => {
     licenseExpiry.setDate(licenseExpiry.getDate() + 30);
 
     // 創建用戶
-    await currentDb.run(`
-      INSERT INTO users (username, password, duration_days, expiration_date, is_active, is_admin)
-      VALUES (?, ?, ?, ?, 1, 0)
-    `, [
-      username,
-      hashedPassword,
-      30,
-      licenseExpiry.toISOString()
-    ]);
+    let insertSql, insertParams;
+    if (database.dbType === 'postgres') {
+      insertSql = `
+        INSERT INTO users (username, password, duration_days, expiration_date, is_active, is_admin)
+        VALUES ($1, $2, $3, $4, 1, 0)
+      `;
+      insertParams = [username, hashedPassword, 30, licenseExpiry.toISOString()];
+    } else {
+      insertSql = `
+        INSERT INTO users (username, password, duration_days, expiration_date, is_active, is_admin)
+        VALUES (?, ?, ?, ?, 1, 0)
+      `;
+      insertParams = [username, hashedPassword, 30, licenseExpiry.toISOString()];
+    }
+    
+    await currentDb.run(insertSql, insertParams);
 
     console.log('✅ 新用戶註冊成功:', username);
 
