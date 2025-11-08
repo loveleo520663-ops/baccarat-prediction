@@ -153,8 +153,13 @@ app.get('/health', async (req, res) => {
     let dbStatus = 'disconnected';
     
     try {
-      const result = await db.get('SELECT 1 as test');
-      dbStatus = 'connected';
+      if (database.dbType === 'postgres') {
+        const result = await db.query('SELECT 1 as test');
+        dbStatus = 'connected';
+      } else {
+        const result = await db.get('SELECT 1 as test');
+        dbStatus = 'connected';
+      }
     } catch (dbErr) {
       dbStatus = 'error: ' + dbErr.message;
     }
