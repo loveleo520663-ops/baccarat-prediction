@@ -4,7 +4,8 @@
   "description": "專業百家樂預測系統",
   "main": "server/app.js",
   "scripts": {
-    "start": "node server/app.js",
+    "start": "node simple-render-test.js",
+    "start-full": "node server/app.js",
     "dev": "nodemon server/app.js",
     "init-db": "node server/initDatabase.js"
   },
