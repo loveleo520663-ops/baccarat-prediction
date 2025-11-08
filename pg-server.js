@@ -22,10 +22,8 @@ const initApp = async () => {
     console.log('✅ 資料庫初始化完成');
   } catch (error) {
     console.error('❌ 資料庫初始化失敗:', error);
-    // 如果是開發環境,繼續執行;生產環境則退出
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
-    }
+    console.log('⚠️ 警告: 資料庫連接失敗,但伺服器將繼續運行');
+    console.log('💡 請檢查 DATABASE_URL 環境變數是否正確設定');
   }
 };
 
