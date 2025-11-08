@@ -4,21 +4,17 @@
   "description": "專業百家樂預測系統",
   "main": "server/app.js",
   "scripts": {
-    "start": "node stable-server.js",
-    "start-full": "node server/app.js",
-    "dev": "nodemon server/app.js",
-    "init-db": "node server/initDatabase.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
     "express": "^4.18.2",
+    "pg": "^8.16.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
     "express-rate-limit": "^6.10.0",
     "helmet": "^7.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.16.3",
-    "sqlite3": "^5.1.6",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -27,12 +23,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": [
-    "baccarat",
-    "prediction",
-    "casino",
-    "gambling"
-  ],
+  "keywords": ["baccarat", "prediction", "casino", "gambling"],
   "author": "Baccarat System Developer",
   "license": "MIT"
 }

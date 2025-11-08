@@ -1,28 +1,17 @@
 version: "1"
 
-databases:
-  - name: baccarat-db
-    databaseName: baccarat
-    user: baccarat_user
-    plan: free
-
 services:
   - type: web
     name: baccarat-prediction
     env: node
     runtime: node
     plan: free
+    region: singapore
     buildCommand: npm ci
     startCommand: npm start
-    healthCheckPath: /health
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DB_TYPE
-        value: postgres
-      - key: DATABASE_URL
-        fromDatabase:
-          name: baccarat-db
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true

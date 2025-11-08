@@ -95,15 +95,12 @@ class LoginPage {
             const response = await auth.login(username, password);
             
             if (response.success) {
-                messageBox.success('登入成功！正在跳轉...');
+                messageBox.success('登入成功！');
                 
-                // 立即跳轉，不使用 setTimeout 避免卡住
-                loadingOverlay.show('跳轉中...');
-                
-                // 使用 location.replace 強制跳轉，避免卡住
                 setTimeout(() => {
-                    window.location.replace('/game');
-                }, 500);
+                    // 所有用戶登入後都進入遊戲頁面
+                    window.location.href = '/game';
+                }, 1000);
             }
         } catch (error) {
             messageBox.error(error.message || '登入失敗');
