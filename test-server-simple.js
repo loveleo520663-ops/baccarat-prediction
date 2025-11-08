@@ -69,6 +69,14 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'admin.html'));
 });
 
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
+});
+
+app.get('/prediction', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'prediction.html'));
+});
+
 // 404 處理
 app.use((req, res) => {
   res.status(404).send(`
