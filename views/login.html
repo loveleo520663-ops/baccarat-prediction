@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>百家樂預測系統 - 登入</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    
+    <!-- 備用圖標字體 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@400&display=swap');
+        
+        /* 確保 Font Awesome 圖標正確加載 */
+        .fas, .fa {
+            font-family: "Font Awesome 5 Free", "Font Awesome 5 Pro", "Noto Emoji", sans-serif !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+        }
+        
+        /* 如果 Font Awesome 載入失敗，使用 Unicode 符號作為備用 */
+        .fa-crown::before { content: "👑"; }
+        .fa-user::before { content: "👤"; }
+        .fa-lock::before { content: "🔒"; }
+        .fa-sign-in-alt::before { content: "🚪"; }
+    </style>
+    
     <style>
         * {
             margin: 0;
