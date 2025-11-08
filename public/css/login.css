@@ -1,11 +1,13 @@
 /* 登入頁面樣式 */
 .login-container {
     min-height: 100vh;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 2rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow-y: auto;
 }
 
 .login-card {
