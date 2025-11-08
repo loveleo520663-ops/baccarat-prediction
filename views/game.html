@@ -15,76 +15,157 @@
     <title>百家樂預測系統 v2.4 - 遊戲大廳</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <!-- 緊急修復：立即處理服務條款 -->
+    <!-- 服務條款處理腳本 -->
     <script>
-        // 緊急修復腳本 - 立即執行
+        // 服務條款彈窗處理
         (function() {
-            console.log('🚨 緊急修復執行中...');
+            console.log('� 服務條款處理腳本載入');
             
-            // 立即設置已同意標記
-            localStorage.setItem('termsAccepted', 'true');
-            localStorage.setItem('userAgreed', 'true');
-            sessionStorage.setItem('skipTerms', 'true');
+            let termsModalShown = false;
+            let gameInitialized = false;
             
-            // 強制處理函數
-            function forceHandle() {
-                console.log('💥 強制處理服務條款');
-                
-                // 1. 隱藏所有可能的彈窗
-                const modals = document.querySelectorAll('.modal, .popup, .dialog, .terms-modal, [class*="modal"], [style*="position: fixed"]');
-                modals.forEach(el => {
-                    el.style.display = 'none !important';
-                    el.remove();
-                });
-                
-                // 2. 移除覆蓋層
-                document.body.style.overflow = 'auto';
-                document.body.classList.remove('modal-open', 'no-scroll');
-                
-                // 3. 強制點擊所有包含「同意」的元素
-                document.querySelectorAll('*').forEach(el => {
-                    const text = el.textContent || '';
-                    if (text.includes('同意') || text.includes('我同意')) {
-                        console.log('🎯 強制點擊:', el);
-                        el.click();
-                        el.dispatchEvent(new Event('click', {bubbles: true}));
-                    }
-                });
-                
-                console.log('✅ 強制處理完成');
+            // 檢查是否已同意服務條款
+            function hasAgreedToTerms() {
+                return localStorage.getItem('termsAccepted') === 'true';
             }
             
-            // 立即執行
-            forceHandle();
-            
-            // 0.1秒後再執行一次
-            setTimeout(forceHandle, 100);
-            
-            // 0.5秒後再執行一次
-            setTimeout(forceHandle, 500);
-            
-            // 每秒檢查一次，持續5秒
-            let count = 0;
-            const interval = setInterval(() => {
-                count++;
-                forceHandle();
-                if (count >= 5) {
-                    clearInterval(interval);
-                    console.log('🛑 緊急修復完成');
+            // 顯示服務條款彈窗
+            function showTermsModal() {
+                if (termsModalShown || hasAgreedToTerms()) {
+                    return;
                 }
-            }, 1000);
+                
+                console.log('� 顯示服務條款彈窗');
+                termsModalShown = true;
+                
+                // 創建服務條款彈窗
+                const modal = document.createElement('div');
+                modal.id = 'termsModal';
+                modal.className = 'terms-modal show';
+                modal.innerHTML = `
+                    <div class="terms-content">
+                        <div class="terms-header">
+                            <h2>📋 服務條款與聲明</h2>
+                            <p class="terms-subtitle">請仔細閱讀並同意以下條款</p>
+                        </div>
+                        
+                        <div class="terms-section">
+                            <h3>1. 服務性質聲明</h3>
+                            <ul>
+                                <li>本系統為「娛樂性」牌路分析工具</li>
+                                <li>所有預測結果僅供參考，不保證任何準確性</li>
+                                <li>系統採用歷史數據進行統計分析，不保證預測準確性</li>
+                                <li>百家樂為機率遊戲，每局結果完全隨機獨立</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="terms-section">
+                            <h3>2. 使用者責任限制</h3>
+                            <ul>
+                                <li>用戶必須年滿 18歲 方可使用本系統</li>
+                                <li>禁止未成年人使用任何遊戲相關功能</li>
+                                <li>用戶需理性對待預測結果，避免過度依賴</li>
+                                <li>如有賭博問題，請立即尋求專業協助</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="terms-warning">
+                            <p>⚠️ 重要聲明：本系統純屬娛樂，請勿用於實際投注！⚠️</p>
+                        </div>
+                        
+                        <div class="terms-buttons">
+                            <button class="terms-btn disagree" onclick="handleDisagree()">✗ 不同意</button>
+                            <button class="terms-btn agree" onclick="handleAgree()">✓ 我同意</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                document.body.classList.add('modal-open');
+                
+                console.log('📋 服務條款彈窗已顯示');
+            }
             
-            // 全域點擊攔截
-            document.addEventListener('click', function(e) {
-                const text = e.target.textContent || '';
-                if (text.includes('同意')) {
-                    console.log('🔄 檢測到同意點擊，立即刷新');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    localStorage.setItem('termsAccepted', 'true');
-                    window.location.reload();
+            // 處理同意
+            window.handleAgree = function() {
+                console.log('✅ 用戶同意服務條款');
+                
+                // 設置同意標記
+                localStorage.setItem('termsAccepted', 'true');
+                localStorage.setItem('termsAgreedTime', new Date().toISOString());
+                
+                // 移除彈窗
+                const modal = document.getElementById('termsModal');
+                if (modal) {
+                    modal.remove();
                 }
-            }, true);
+                document.body.classList.remove('modal-open');
+                
+                // 初始化遊戲
+                initializeGame();
+            };
+            
+            // 處理不同意
+            window.handleDisagree = function() {
+                console.log('❌ 用戶不同意服務條款');
+                alert('您必須同意服務條款才能使用本系統');
+                window.location.href = '/login';
+            };
+            
+            // 初始化遊戲
+            function initializeGame() {
+                if (gameInitialized) {
+                    return;
+                }
+                
+                console.log('🎮 開始初始化遊戲...');
+                gameInitialized = true;
+                
+                // 檢查認證
+                if (!auth.isAuthenticated()) {
+                    console.log('❌ 用戶未認證，跳轉登入');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                // 初始化遊戲對象
+                try {
+                    window.game = new BaccaratGame();
+                    console.log('✅ 遊戲初始化成功');
+                } catch (error) {
+                    console.error('❌ 遊戲初始化失敗:', error);
+                }
+            }
+            
+            // 啟動流程
+            function startApplication() {
+                console.log('🚀 啟動應用程序');
+                
+                // 檢查認證
+                if (!auth.isAuthenticated()) {
+                    console.log('❌ 用戶未認證，跳轉登入');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1000);
+                    return;
+                }
+                
+                // 檢查是否已同意條款
+                if (hasAgreedToTerms()) {
+                    console.log('✅ 用戶已同意條款，直接初始化遊戲');
+                    initializeGame();
+                } else {
+                    console.log('📋 需要顯示服務條款');
+                    setTimeout(showTermsModal, 500);
+                }
+            }
+            
+            // 頁面載入完成後啟動
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', startApplication);
+            } else {
+                startApplication();
+            }
             
         })();
     </script>
@@ -2255,29 +2336,9 @@
             window.location.href = '/admin';
         }
 
-        // 頁面載入完成後初始化
+        // 頁面載入完成後的事件綁定（不處理遊戲初始化）
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('遊戲頁面載入中...');
-            
-            // 延遲檢查登入狀態，給登入流程足夠時間
-            setTimeout(() => {
-                console.log('檢查登入狀態...');
-                if (!auth.isAuthenticated()) {
-                    console.log('未認證，重定向到登入頁面');
-                    // 避免立即跳轉造成循環，給用戶時間
-                    setTimeout(() => {
-                        window.location.replace('/login');
-                    }, 1000);
-                    return;
-                }
-
-                console.log('用戶已認證，初始化遊戲...');
-                // 初始化遊戲
-                game = new BaccaratGame();
-                window.game = game; // 確保全域可用
-                
-                console.log('遊戲初始化完成！');
-            }, 500); // 增加延遲時間
+            console.log('🎮 綁定頁面事件...');
             
             console.log('遊戲初始化完成');
             console.log('game對象:', game);
