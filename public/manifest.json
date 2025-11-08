@@ -1,0 +1,56 @@
+{
+  "name": "百家樂預測系統",
+  "short_name": "百家樂預測",
+  "description": "專業預測・精準分析",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "zh-TW",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshot.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["entertainment", "games"],
+  "shortcuts": [
+    {
+      "name": "登入",
+      "short_name": "登入",
+      "description": "快速登入系統",
+      "url": "/login",
+      "icons": [{ "src": "/images/favicon.png", "sizes": "64x64" }]
+    },
+    {
+      "name": "預測",
+      "short_name": "預測",
+      "description": "開始預測",
+      "url": "/prediction",
+      "icons": [{ "src": "/images/favicon.png", "sizes": "64x64" }]
+    }
+  ]
+}
