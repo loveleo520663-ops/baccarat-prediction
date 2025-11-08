@@ -1,3 +1,12 @@
+// 遊戲頁面路由
+app.get('/game', (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, 'views/game.html'));
+  } catch (error) {
+    console.error('❌ 遊戲頁面錯誤:', error);
+    res.status(500).send(`遊戲頁面錯誤: ${error.message}`);
+  }
+});
 // 百家樂預測系統 - 簡化版記憶體伺服器
 const express = require('express');
 const path = require('path');
