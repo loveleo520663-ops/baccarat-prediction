@@ -1,12 +1,12 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "baccarat-prediction-system",
   "version": "1.0.0",
   "description": "專業百家樂預測系統",
-  "main": "server/app.js",
+  "main": "memory-server.js",
   "scripts": {
     "start": "node memory-server.js",
-    "dev": "nodemon memory-server.js",
-    "old": "node server/app.js"
+    "dev": "nodemon memory-server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
