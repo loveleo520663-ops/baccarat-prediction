@@ -280,13 +280,11 @@
             overflow-x: hidden;
             position: relative;
             line-height: 1.5;
-            /* iOS 安全區域適配 */
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
             /* iOS 慣性滾動 */
             -webkit-overflow-scrolling: touch;
+            /* iOS 字體平滑 */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* 頂部導航欄 */
@@ -378,6 +376,9 @@
             max-width: 1400px;
             margin: 0 auto;
             min-height: calc(100vh - 80px);
+            /* iPhone 安全區域 - 只在左右加 */
+            padding-left: max(20px, env(safe-area-inset-left));
+            padding-right: max(20px, env(safe-area-inset-right));
         }
 
         /* 左側區域 - 牌色選擇器 */
