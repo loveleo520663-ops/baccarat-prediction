@@ -1,12 +1,3 @@
-// 遊戲頁面路由
-app.get('/game', (req, res) => {
-  try {
-    res.sendFile(path.join(__dirname, 'views/game.html'));
-  } catch (error) {
-    console.error('❌ 遊戲頁面錯誤:', error);
-    res.status(500).send(`遊戲頁面錯誤: ${error.message}`);
-  }
-});
 // 百家樂預測系統 - 簡化版記憶體伺服器
 const express = require('express');
 const path = require('path');
@@ -23,7 +14,7 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || 'baccarat-simple-key-2024';
 
-// 記憶體資料存儲 - 僅管理員帳號
+// 記憶體資料存儲 - 支援多用戶
 let memoryUsers = [
   {
     id: 1,
@@ -35,6 +26,7 @@ let memoryUsers = [
 ];
 
 let memoryPredictions = [];
+let nextUserId = 2; // 下一個用戶 ID
 
 // 中間件配置
 app.use(helmet({
@@ -115,6 +107,15 @@ app.get('/login', (req, res) => {
   }
 });
 
+app.get('/game', (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, 'views/game.html'));
+  } catch (error) {
+    console.error('❌ 遊戲頁面錯誤:', error);
+    res.status(500).send(`遊戲頁面錯誤: ${error.message}`);
+  }
+});
+
 app.get('/dashboard', (req, res) => {
   try {
     res.sendFile(path.join(__dirname, 'views/dashboard.html'));
@@ -126,10 +127,10 @@ app.get('/dashboard', (req, res) => {
 
 app.get('/admin', (req, res) => {
   try {
-    res.sendFile(path.join(__dirname, 'views/admin.html'));
+    res.sendFile(path.join(__dirname, 'views/admin-simple.html'));
   } catch (error) {
-    console.error('❌ 管理頁面錯誤:', error);
-    res.status(500).send(`管理頁面錯誤: ${error.message}`);
+    console.error('❌ 後台頁面錯誤:', error);
+    res.status(500).send(`後台頁面錯誤: ${error.message}`);
   }
 });
 
@@ -221,6 +222,108 @@ app.get('/api/admin/status', authenticateToken, requireAdmin, (req, res) => {
     admin: req.user.username,
     timestamp: new Date().toISOString()
   });
+});
+
+// 獲取所有用戶列表（僅管理員）
+app.get('/api/admin/users', authenticateToken, requireAdmin, (req, res) => {
+  try {
+    const users = memoryUsers.map(user => ({
+      id: user.id,
+      username: user.username,
+      isAdmin: user.is_admin === 1,
+      createdAt: user.created_at
+    }));
+
+    res.json({
+      success: true,
+      users,
+      total: users.length
+    });
+  } catch (error) {
+    console.error('獲取用戶列表錯誤:', error);
+    res.status(500).json({ error: '伺服器錯誤' });
+  }
+});
+
+// 創建新用戶（僅管理員）
+app.post('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { username, password, isAdmin } = req.body;
+
+    // 驗證輸入
+    if (!username || !password) {
+      return res.status(400).json({ error: '用戶名和密碼不能為空' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: '密碼長度至少需要6位' });
+    }
+
+    // 檢查用戶名是否已存在
+    if (findUserByUsername(username)) {
+      return res.status(400).json({ error: '用戶名已存在' });
+    }
+
+    // 創建新用戶
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = {
+      id: nextUserId++,
+      username,
+      password: hashedPassword,
+      is_admin: isAdmin ? 1 : 0,
+      created_at: new Date().toISOString()
+    };
+
+    memoryUsers.push(newUser);
+
+    res.json({
+      success: true,
+      message: '用戶創建成功',
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        isAdmin: newUser.is_admin === 1,
+        createdAt: newUser.created_at
+      }
+    });
+
+    console.log(`✅ 管理員 ${req.user.username} 創建了新用戶: ${username} (${isAdmin ? '管理員' : '普通用戶'})`);
+  } catch (error) {
+    console.error('創建用戶錯誤:', error);
+    res.status(500).json({ error: '伺服器錯誤' });
+  }
+});
+
+// 刪除用戶（僅管理員）
+app.delete('/api/admin/users/:userId', authenticateToken, requireAdmin, (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+
+    // 不允許刪除自己
+    if (userId === req.user.userId) {
+      return res.status(400).json({ error: '不能刪除自己的帳號' });
+    }
+
+    // 查找用戶索引
+    const userIndex = memoryUsers.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+      return res.status(404).json({ error: '用戶不存在' });
+    }
+
+    const deletedUser = memoryUsers[userIndex];
+    memoryUsers.splice(userIndex, 1);
+
+    res.json({
+      success: true,
+      message: '用戶已刪除',
+      username: deletedUser.username
+    });
+
+    console.log(`✅ 管理員 ${req.user.username} 刪除了用戶: ${deletedUser.username}`);
+  } catch (error) {
+    console.error('刪除用戶錯誤:', error);
+    res.status(500).json({ error: '伺服器錯誤' });
+  }
 });
 
 // 預測相關API

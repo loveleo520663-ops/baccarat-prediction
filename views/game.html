@@ -38,6 +38,190 @@
         .fa-history::before { content: "📊"; }
         .fa-chart-area::before { content: "📈"; }
     </style>
+    
+    <!-- 服務條款模態框樣式 -->
+    <style>
+        .terms-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .terms-modal.show {
+            display: flex !important;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .terms-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 2px solid #d4af37;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(212, 175, 55, 0.3);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .terms-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .terms-text {
+            color: #e0e0e0;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .terms-text::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terms-text::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .terms-text::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 4px;
+        }
+
+        .terms-text h3 {
+            color: #d4af37;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .terms-text h4 {
+            color: #ffd700;
+            font-size: 1rem;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .terms-text ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .terms-text li {
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+
+        .terms-text p {
+            margin-bottom: 15px;
+        }
+
+        .terms-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .terms-btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .terms-btn.agree {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .terms-btn.agree:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .terms-btn.disagree {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+        }
+
+        .terms-btn.disagree:hover {
+            background: linear-gradient(135deg, #da190b, #c1170a);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        /* 手機版適配 */
+        @media (max-width: 768px) {
+            .terms-content {
+                padding: 20px;
+                max-width: 95%;
+            }
+
+            .terms-content h2 {
+                font-size: 1.2rem;
+            }
+
+            .terms-text {
+                font-size: 0.9rem;
+                max-height: 60vh;
+            }
+
+            .terms-buttons {
+                flex-direction: column;
+            }
+
+            .terms-btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+    
     <style>
 
         * {
@@ -1499,6 +1683,62 @@
     </style>
 </head>
 <body>
+    <!-- 服務條款模態框 -->
+    <div id="termsModal" class="terms-modal">
+        <div class="terms-content">
+            <h2 style="text-align: center; color: #d4af37; margin-bottom: 20px;">
+                <i class="fas fa-file-contract"></i> 服務條款與使用須知
+            </h2>
+            
+            <div class="terms-text">
+                <h3>歡迎使用百家樂預測系統</h3>
+                <p>在使用本系統前，請仔細閱讀以下條款：</p>
+                
+                <h4>1. 服務說明</h4>
+                <ul>
+                    <li>本系統僅提供百家樂遊戲趨勢分析與預測參考</li>
+                    <li>預測結果僅供參考，不構成任何投資建議</li>
+                    <li>使用者應自行承擔所有決策風險</li>
+                </ul>
+                
+                <h4>2. 免責聲明</h4>
+                <ul>
+                    <li>本系統不保證預測結果的準確性</li>
+                    <li>使用者因使用本系統而產生的任何損失，本系統概不負責</li>
+                    <li>本系統保留隨時修改或終止服務的權利</li>
+                </ul>
+                
+                <h4>3. 使用規範</h4>
+                <ul>
+                    <li>禁止用於任何違法用途</li>
+                    <li>禁止惡意攻擊或破壞系統</li>
+                    <li>請妥善保管您的帳號資訊</li>
+                    <li>建議理性娛樂，量力而為</li>
+                </ul>
+                
+                <h4>4. 隱私保護</h4>
+                <ul>
+                    <li>我們重視您的隱私安全</li>
+                    <li>遊戲記錄僅保存於您的瀏覽器本地</li>
+                    <li>我們不會收集或分享您的個人資訊</li>
+                </ul>
+                
+                <p style="margin-top: 20px; color: #ff6b6b; font-weight: bold;">
+                    ⚠️ 重要提醒：賭博有風險，請理性娛樂，切勿沉迷！
+                </p>
+            </div>
+            
+            <div class="terms-buttons">
+                <button class="terms-btn disagree" id="disagreeTermsBtn">
+                    <i class="fas fa-times"></i> 不同意
+                </button>
+                <button class="terms-btn agree" id="agreeTermsBtn">
+                    <i class="fas fa-check"></i> 同意並繼續
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 頂部導航欄 -->
     <nav class="navbar">
         <div class="nav-brand">
@@ -1822,7 +2062,7 @@
                     
                     // 如果是管理員，顯示後台管理按鈕
                     const adminBtn = document.getElementById('adminBtn');
-                    if (user.role === 'admin') {
+                    if (user.isAdmin === true || user.role === 'admin') {
                         console.log('顯示管理員按鈕');
                         adminBtn.classList.remove('hidden');
                     } else {
@@ -2181,8 +2421,55 @@
             window.location.href = '/admin';
         }
 
+        // 服務條款相關函數
+        function showTermsModal() {
+            const modal = document.getElementById('termsModal');
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function hideTermsModal() {
+            const modal = document.getElementById('termsModal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function agreeTerms() {
+            // 直接關閉服務條款視窗
+            hideTermsModal();
+            console.log('用戶已同意服務條款');
+        }
+
+        function disagreTerms() {
+            // 用戶不同意條款，直接登出
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        // 綁定服務條款按鈕事件
+        function bindTermsEvents() {
+            const agreeBtn = document.getElementById('agreeTermsBtn');
+            const disagreeBtn = document.getElementById('disagreeTermsBtn');
+            
+            if (agreeBtn) {
+                agreeBtn.addEventListener('click', agreeTerms);
+            }
+            
+            if (disagreeBtn) {
+                disagreeBtn.addEventListener('click', disagreTerms);
+            }
+        }
+
         // 頁面載入完成後初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 綁定服務條款按鈕事件
+            bindTermsEvents();
+            
             // 延遲檢查登入狀態，避免與登入頁面的重定向衝突
             setTimeout(() => {
                 if (!auth.isAuthenticated()) {
@@ -2190,6 +2477,9 @@
                     window.location.href = '/login';
                     return;
                 }
+
+                // 每次進入都顯示服務條款
+                showTermsModal();
 
                 // 初始化遊戲
                 game = new BaccaratGame();
