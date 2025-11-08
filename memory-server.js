@@ -9,6 +9,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const app = express();
+// 信任 Render 代理，讓 express-rate-limit 正常取得用戶 IP
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || 'baccarat-simple-key-2024';
 
