@@ -102,23 +102,50 @@ const findLicenseByKey = (key) => {
 
 // 路由
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/home.html'));
+  try {
+    const filePath = path.join(__dirname, 'views/home.html');
+    console.log(`📄 嘗試服務文件: ${filePath}`);
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('❌ 根路由錯誤:', error);
+    res.status(500).send(`伺服器錯誤: ${error.message}`);
+  }
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/login.html'));
+  try {
+    res.sendFile(path.join(__dirname, 'views/login.html'));
+  } catch (error) {
+    console.error('❌ 登入頁面錯誤:', error);
+    res.status(500).send(`登入頁面錯誤: ${error.message}`);
+  }
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/dashboard.html'));
+  try {
+    res.sendFile(path.join(__dirname, 'views/dashboard.html'));
+  } catch (error) {
+    console.error('❌ 儀表板錯誤:', error);
+    res.status(500).send(`儀表板錯誤: ${error.message}`);
+  }
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/admin.html'));
+  try {
+    res.sendFile(path.join(__dirname, 'views/admin.html'));
+  } catch (error) {
+    console.error('❌ 管理頁面錯誤:', error);
+    res.status(500).send(`管理頁面錯誤: ${error.message}`);
+  }
 });
 
 app.get('/prediction', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/prediction.html'));
+  try {
+    res.sendFile(path.join(__dirname, 'views/prediction.html'));
+  } catch (error) {
+    console.error('❌ 預測頁面錯誤:', error);
+    res.status(500).send(`預測頁面錯誤: ${error.message}`);
+  }
 });
 
 // API 路由
@@ -345,7 +372,31 @@ app.get('/health', (req, res) => {
     mode: 'memory',
     users: memoryUsers.length,
     licenses: memoryLicenses.length,
-    predictions: memoryPredictions.length
+    predictions: memoryPredictions.length,
+    uptime: process.uptime(),
+    port: PORT,
+    env: process.env.NODE_ENV || 'development',
+    __dirname: __dirname
+  });
+});
+
+// 調試路由
+app.get('/debug', (req, res) => {
+  res.json({
+    message: '✅ 記憶體伺服器運行正常',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime(),
+    directory: __dirname,
+    viewsPath: path.join(__dirname, 'views'),
+    publicPath: path.join(__dirname, 'public'),
+    routes: ['/', '/login', '/dashboard', '/admin', '/prediction', '/health', '/debug'],
+    memoryData: {
+      users: memoryUsers.length,
+      licenses: memoryLicenses.length,
+      predictions: memoryPredictions.length
+    }
   });
 });
 
