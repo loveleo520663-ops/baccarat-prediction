@@ -557,6 +557,62 @@ app.get('/quick-test', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/quick-test.html'));
 });
 
+// 測試新後台 API
+app.get('/test-new-admin-api', async (req, res) => {
+  try {
+    console.log('🧪 測試新後台 API...');
+    
+    const database = require('./database');
+    const db = database.getDB();
+    
+    if (!db) {
+      return res.json({
+        success: false,
+        error: '資料庫連接失敗'
+      });
+    }
+    
+    // 測試用戶查詢
+    const users = await new Promise((resolve, reject) => {
+      db.all('SELECT id, username, is_active FROM users ORDER BY id DESC', (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+    
+    // 測試統計查詢
+    const totalUsers = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
+        if (err) reject(err);
+        else resolve(result.count);
+      });
+    });
+    
+    res.json({
+      success: true,
+      message: '新後台 API 測試成功',
+      results: {
+        database_connection: '正常',
+        total_users: totalUsers,
+        users_preview: users,
+        api_endpoints: [
+          '/api/admin-new/users',
+          '/api/admin-new/stats',
+          '/api/admin-new/licenses'
+        ]
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ 新後台 API 測試失敗:', error);
+    res.json({
+      success: false,
+      error: '新後台 API 測試失敗',
+      details: error.message
+    });
+  }
+});
+
 app.get('/login-debug', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -571,6 +627,14 @@ app.get('/emergency-fix', (req, res) => {
   res.setHeader('Expires', '0');
   res.setHeader('ETag', 'false');
   res.sendFile(path.join(__dirname, '../views/emergency-fix.html'));
+});
+
+app.get('/test-new-admin', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('ETag', 'false');
+  res.sendFile(path.join(__dirname, '../views/test-new-admin.html'));
 });
 
 app.get('/prediction', (req, res) => {

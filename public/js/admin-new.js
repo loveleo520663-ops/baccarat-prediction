@@ -89,24 +89,36 @@ async function loadDashboardData() {
         console.log('📊 載入儀表板數據');
         
         // 載入統計數據
+        console.log('🔍 調用統計 API: /api/admin-new/stats');
         const statsResponse = await fetchWithAuth('/api/admin-new/stats');
+        console.log('📊 統計 API 響應狀態:', statsResponse.status);
         const stats = await statsResponse.json();
+        console.log('📊 統計數據:', stats);
         
         if (stats.success) {
             updateDashboardStats(stats.data);
+        } else {
+            console.error('❌ 統計數據載入失敗:', stats.message);
+            showNotification('統計數據載入失敗: ' + (stats.message || '未知錯誤'), 'error');
         }
         
         // 載入最近用戶
+        console.log('🔍 調用用戶 API: /api/admin-new/users');
         const usersResponse = await fetchWithAuth('/api/admin-new/users');
+        console.log('👥 用戶 API 響應狀態:', usersResponse.status);
         const users = await usersResponse.json();
+        console.log('👥 用戶數據:', users);
         
         if (users.success) {
             updateRecentUsers(users.users.slice(0, 5)); // 只顯示最近5個用戶
+        } else {
+            console.error('❌ 用戶數據載入失敗:', users.message);
+            showNotification('用戶數據載入失敗: ' + (users.message || '未知錯誤'), 'error');
         }
         
     } catch (error) {
-        console.error('載入儀表板數據失敗:', error);
-        showNotification('載入數據失敗', 'error');
+        console.error('❌ 載入儀表板數據失敗:', error);
+        showNotification('載入數據失敗: ' + error.message, 'error');
     }
 }
 
@@ -144,22 +156,32 @@ function updateRecentUsers(users) {
 // 載入用戶數據
 async function loadUsers() {
     try {
-        console.log('👥 載入用戶數據');
+        console.log('👥 開始載入用戶數據...');
         
+        console.log('📡 向 /api/admin-new/users 發送請求...');
         const response = await fetchWithAuth('/api/admin-new/users');
+        console.log('📥 用戶API響應狀態:', response.status);
+        
         const data = await response.json();
+        console.log('👥 用戶API響應數據:', data);
         
         if (data.success) {
-            allUsers = data.users;
+            console.log('✅ 用戶數據載入成功，用戶數量:', data.users ? data.users.length : 0);
+            if (data.users && data.users.length > 0) {
+                console.log('👤 第一個用戶示例:', data.users[0]);
+            }
+            allUsers = data.users || [];
             updateUsersTable(allUsers);
         } else {
+            console.error('❌ 用戶API返回失敗:', data.message);
             throw new Error(data.message || '載入用戶失敗');
         }
         
     } catch (error) {
-        console.error('載入用戶失敗:', error);
+        console.error('💥 載入用戶數據時發生錯誤:', error);
+        console.error('錯誤詳情:', error.stack);
         document.getElementById('users-table').innerHTML = 
-            '<tr><td colspan="6" style="text-align:center;color:#f56565;">載入用戶數據失敗</td></tr>';
+            '<tr><td colspan="6" style="text-align:center;color:#f56565;">載入用戶數據失敗: ' + error.message + '</td></tr>';
     }
 }
 

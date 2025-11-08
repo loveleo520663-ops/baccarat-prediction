@@ -14,10 +14,13 @@ function requireAdmin(req, res, next) {
 
 // 獲取統計數據
 router.get('/stats', requireAdmin, (req, res) => {
-  console.log('📊 獲取統計數據');
+  console.log('📊 新後台 - 獲取統計數據');
   
   const db = database.getDB();
+  console.log('🔍 資料庫連接狀態:', db ? '正常' : '失敗');
+  
   if (!db) {
+    console.error('❌ 新後台 - 資料庫連接失敗');
     return res.status(500).json({ success: false, message: '資料庫連接失敗' });
   }
 
@@ -101,10 +104,13 @@ router.get('/stats', requireAdmin, (req, res) => {
 
 // 獲取所有用戶
 router.get('/users', requireAdmin, (req, res) => {
-  console.log('👥 獲取用戶列表');
+  console.log('👥 新後台 - 獲取用戶列表');
   
   const db = database.getDB();
+  console.log('🔍 用戶查詢 - 資料庫連接狀態:', db ? '正常' : '失敗');
+  
   if (!db) {
+    console.error('❌ 新後台 - 用戶查詢資料庫連接失敗');
     return res.status(500).json({ success: false, message: '資料庫連接失敗' });
   }
 
@@ -125,7 +131,7 @@ router.get('/users', requireAdmin, (req, res) => {
     ORDER BY id DESC
   `, (err, users) => {
     if (err) {
-      console.error('❌ 獲取用戶失敗:', err);
+      console.error('❌ 新後台 - 獲取用戶失敗:', err);
       return res.status(500).json({
         success: false,
         message: '獲取用戶數據失敗',
@@ -133,7 +139,11 @@ router.get('/users', requireAdmin, (req, res) => {
       });
     }
 
-    console.log(`✅ 成功獲取 ${users.length} 個用戶`);
+    console.log(`✅ 新後台 - 成功獲取 ${users.length} 個用戶`);
+    if (users.length > 0) {
+      console.log('📋 用戶列表預覽:', users.map(u => ({ id: u.id, username: u.username, is_active: u.is_active })));
+    }
+    
     res.json({
       success: true,
       users: users,
