@@ -19,6 +19,8 @@
     <script src="/js/game-fix.js"></script>
     <!-- 強制跳過服務條款 -->
     <script src="/js/force-skip.js"></script>
+    <!-- 終極修復：完全移除彈窗系統 -->
+    <script src="/js/ultimate-fix.js"></script>
     
     <!-- 備用圖標字體 -->
     <style>
@@ -847,24 +849,18 @@
             text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
         }
 
-        /* 服務條款模態框 */
+        /* 服務條款模態框 - 已禁用防止卡住 */
         .terms-modal {
-            display: none;
-            position: fixed;
-            z-index: 10000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            animation: fadeIn 0.3s ease;
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
         }
 
         .terms-modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: none !important;
+            visibility: hidden !important;
         }
 
         .terms-content {
