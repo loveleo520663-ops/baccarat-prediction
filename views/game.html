@@ -15,6 +15,9 @@
     <title>百家樂預測系統 v2.4 - 遊戲大廳</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
+    <!-- 遊戲頁面修復腳本 -->
+    <script src="/js/game-fix.js"></script>
+    
     <!-- 備用圖標字體 -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@400&display=swap');
@@ -2183,18 +2186,27 @@
 
         // 頁面載入完成後初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 延遲檢查登入狀態，避免與登入頁面的重定向衝突
+            console.log('遊戲頁面載入中...');
+            
+            // 延遲檢查登入狀態，給登入流程足夠時間
             setTimeout(() => {
+                console.log('檢查登入狀態...');
                 if (!auth.isAuthenticated()) {
                     console.log('未認證，重定向到登入頁面');
-                    window.location.href = '/login';
+                    // 避免立即跳轉造成循環，給用戶時間
+                    setTimeout(() => {
+                        window.location.replace('/login');
+                    }, 1000);
                     return;
                 }
 
+                console.log('用戶已認證，初始化遊戲...');
                 // 初始化遊戲
                 game = new BaccaratGame();
                 window.game = game; // 確保全域可用
-            }, 100);
+                
+                console.log('遊戲初始化完成！');
+            }, 500); // 增加延遲時間
             
             console.log('遊戲初始化完成');
             console.log('game對象:', game);
