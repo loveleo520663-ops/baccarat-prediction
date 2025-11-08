@@ -66,10 +66,13 @@ async function dbRun(sql, params = []) {
 
 // 登入
 router.post('/login', async (req, res) => {
+  console.log('🔐 開始處理登錄請求');
+  
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
+      console.log('❌ 缺少登錄參數');
       return res.status(400).json({ error: '請輸入用戶名和密碼' });
     }
 
@@ -82,13 +85,13 @@ router.post('/login', async (req, res) => {
       return res.status(500).json({ error: '資料庫連接失敗' });
     }
     
-    console.log('✅ 資料庫連接正常');
+    console.log('✅ 資料庫連接正常，資料庫類型:', database.dbType);
 
     // 從資料庫查找用戶
     let sql, params;
     if (database.dbType === 'postgres') {
       sql = `
-        SELECT id, username, password, is_active, expiration_date, role
+        SELECT id, username, password, is_active, expiration_date, is_admin
         FROM users 
         WHERE username = $1
       `;
@@ -102,8 +105,18 @@ router.post('/login', async (req, res) => {
       params = [username];
     }
     
-    const users = await dbQuery(sql, params);
-    const user = users[0];
+    console.log('🔍 執行查詢:', sql, params);
+    
+    let users;
+    try {
+      users = await dbQuery(sql, params);
+      console.log('✅ 查詢完成，結果數量:', users ? users.length : 0);
+    } catch (dbError) {
+      console.error('❌ 資料庫查詢錯誤:', dbError);
+      return res.status(500).json({ error: '資料庫查詢失敗', details: dbError.message });
+    }
+    
+    const user = users && users.length > 0 ? users[0] : null;
 
     if (!user) {
       console.log('❌ 用戶不存在:', username);
@@ -138,15 +151,19 @@ router.post('/login', async (req, res) => {
     console.log('✅ 許可證有效:', username, expirationDate);
 
     // 生成 JWT token
+    const userRole = database.dbType === 'postgres' 
+      ? (user.is_admin ? 'admin' : 'user')
+      : (user.role || 'user');
+      
     const tokenPayload = {
       id: user.id,
       username: user.username,
-      role: user.role || 'user'
+      role: userRole
     };
     
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '24h' });
 
-    console.log('✅ 登錄成功:', username);
+    console.log('✅ 登錄成功:', username, '角色:', userRole);
 
     // 返回用戶信息和token
     res.json({
@@ -156,17 +173,22 @@ router.post('/login', async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
-        role: user.role || 'user',
+        role: userRole,
         license_expiry: user.expiration_date
       }
     });
 
   } catch (error) {
-    console.error('❌ 登錄錯誤:', error);
-    res.status(500).json({ 
-      error: '登錄失敗', 
-      details: error.message 
-    });
+    console.error('❌ 登錄過程發生未處理錯誤:', error);
+    console.error('❌ 錯誤堆疊:', error.stack);
+    
+    // 確保總是返回有效的JSON響應
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        error: '登錄失敗', 
+        details: error.message || '服務器內部錯誤'
+      });
+    }
   }
 });
 
@@ -216,8 +238,8 @@ router.post('/register', async (req, res) => {
     let insertSql, insertParams;
     if (database.dbType === 'postgres') {
       insertSql = `
-        INSERT INTO users (username, password, duration_days, expiration_date, is_active, role)
-        VALUES ($1, $2, $3, $4, true, 'user')
+        INSERT INTO users (username, password, duration_days, expiration_date, is_active, is_admin)
+        VALUES ($1, $2, $3, $4, true, 0)
       `;
       insertParams = [username, hashedPassword, 30, licenseExpiry];
     } else {
@@ -281,7 +303,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     let sql, params;
     if (database.dbType === 'postgres') {
       sql = `
-        SELECT id, username, is_active, expiration_date, role
+        SELECT id, username, is_active, expiration_date, is_admin
         FROM users WHERE username = $1
       `;
       params = [req.user.username];
@@ -300,12 +322,16 @@ router.get('/me', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: '用戶不存在' });
     }
 
+    const userRole = database.dbType === 'postgres' 
+      ? (user.is_admin ? 'admin' : 'user')
+      : (user.role || 'user');
+
     res.json({
       success: true,
       user: {
         id: user.id,
         username: user.username,
-        role: user.role || 'user',
+        role: userRole,
         license_expiry: user.expiration_date,
         is_active: user.is_active
       }
