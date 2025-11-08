@@ -8,8 +8,8 @@ services:
     plan: free
     region: singapore
     buildCommand: npm ci
-    startCommand: node memory-server.js
-    healthCheckPath: /health
+    startCommand: npm start
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
