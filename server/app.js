@@ -52,6 +52,7 @@ const initDatabase = async () => {
         expirationDate.setFullYear(expirationDate.getFullYear() + 1);
         
         try {
+          // 先嘗試插入新管理員
           await db.run(`
             INSERT INTO users (username, password, duration_days, expiration_date, is_active, is_admin, created_at)
             VALUES ($1, $2, $3, $4, 1, 1, $5)
@@ -63,9 +64,17 @@ const initDatabase = async () => {
             expirationDate.toISOString(),
             new Date().toISOString()
           ]);
-          console.log('✅ 管理員帳號確保存在: admin / password');
+          console.log('✅ 管理員帳號確保存在');
         } catch (adminErr) {
-          console.log('ℹ️ 管理員帳號可能已存在');
+          console.log('ℹ️ 管理員帳號可能已存在，嘗試更新密碼...');
+        }
+        
+        // 強制更新管理員密碼確保一致性
+        try {
+          await db.run(`UPDATE users SET password = $1 WHERE username = $2`, [hashedPassword, 'admin']);
+          console.log('✅ 管理員密碼已更新: admin / password');
+        } catch (updateErr) {
+          console.log('⚠️ 密碼更新失敗:', updateErr.message);
         }
       } else {
         console.log('ℹ️ SQLite 模式 - 跳過初始化 (使用現有資料)');
