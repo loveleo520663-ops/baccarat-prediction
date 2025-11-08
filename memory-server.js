@@ -89,13 +89,9 @@ const findUserById = (id) => {
 };
 
 // 路由
+// 根路徑重定向到登入頁面
 app.get('/', (req, res) => {
-  try {
-    res.sendFile(path.join(__dirname, 'views/home.html'));
-  } catch (error) {
-    console.error('❌ 根路由錯誤:', error);
-    res.status(500).send(`伺服器錯誤: ${error.message}`);
-  }
+  res.redirect('/login');
 });
 
 app.get('/login', (req, res) => {
