@@ -47,7 +47,7 @@ const initDatabase = async () => {
         
         // 創建管理員 (如果不存在)
         const bcrypt = require('bcryptjs');
-        const hashedPassword = await bcrypt.hash('admin123', 10);
+        const hashedPassword = await bcrypt.hash('password', 10);
         const expirationDate = new Date();
         expirationDate.setFullYear(expirationDate.getFullYear() + 1);
         
@@ -63,7 +63,7 @@ const initDatabase = async () => {
             expirationDate.toISOString(),
             new Date().toISOString()
           ]);
-          console.log('✅ 管理員帳號確保存在: admin / admin123');
+          console.log('✅ 管理員帳號確保存在: admin / password');
         } catch (adminErr) {
           console.log('ℹ️ 管理員帳號可能已存在');
         }
@@ -242,7 +242,7 @@ const startServer = async () => {
     console.log(`🚀 伺服器運行在埠 ${PORT}`);
     console.log(`🌐 訪問地址: http://localhost:${PORT}`);
     console.log(`👑 管理後台: http://localhost:${PORT}/admin-new`);
-    console.log(`🔑 管理員帳號: admin / admin123`);
+    console.log(`🔑 管理員帳號: admin / password`);
   });
 };
 
