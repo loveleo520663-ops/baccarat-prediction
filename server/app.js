@@ -81,8 +81,14 @@ const initDatabase = async () => {
       }
       
       // 驗證連接
-      const userCount = await db.get('SELECT COUNT(*) as count FROM users');
-      console.log('✅ 資料庫連接正常，用戶數量:', userCount?.count || 0);
+      if (database.dbType === 'postgres') {
+        const result = await db.query('SELECT COUNT(*) as count FROM users');
+        const userCount = result.rows[0];
+        console.log('✅ 資料庫連接正常，用戶數量:', userCount?.count || 0);
+      } else {
+        const userCount = await db.get('SELECT COUNT(*) as count FROM users');
+        console.log('✅ 資料庫連接正常，用戶數量:', userCount?.count || 0);
+      }
       
     } catch (tableError) {
       console.error('❌ 資料庫表操作失敗:', tableError.message);
@@ -262,5 +268,11 @@ const startServer = async () => {
 
 startServer().catch(err => {
   console.error('❌ 服務器啟動失敗:', err);
-  process.exit(1);
+  console.log('🔄 嘗試僅啟動 Web 服務器...');
+  
+  // 即使資料庫初始化失敗，也嘗試啟動基本 Web 服務器
+  app.listen(PORT, () => {
+    console.log(`🚀 Web 伺服器運行在埠 ${PORT} (資料庫離線模式)`);
+    console.log(`🌐 訪問地址: http://localhost:${PORT}`);
+  });
 });
