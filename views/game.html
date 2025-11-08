@@ -6,13 +6,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-buster" content="20241107-1445">
+    <meta name="cache-buster" content="20241108-001">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- 版本標記：v2.4 - 手機版格子優化 2024-11-07 -->
-    <title>百家樂預測系統 v2.4 - 遊戲大廳</title>
+    <meta name="apple-mobile-web-app-title" content="百家樂預測">
+    <meta name="theme-color" content="#1a1a1a">
+    <!-- 版本標記：v2.5 - iPhone 優化版 2024-11-08 -->
+    <title>百家樂預測系統 v2.5 - 遊戲大廳</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
     <!-- 備用圖標字體 -->
@@ -263,17 +265,28 @@
         html {
             font-size: 16px;
             -webkit-text-size-adjust: 100%;
+            /* iOS 平滑滾動 */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
-            font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            /* iOS 優先字體 */
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro TC', 'SF Pro Display', 'PingFang TC', 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #404040 50%, #2d2d2d 75%, #1a1a1a 100%);
             color: #E5E5E5;
             min-height: 100vh;
             min-height: -webkit-fill-available;
             overflow-x: hidden;
             position: relative;
-            line-height: 1.4;
+            line-height: 1.5;
+            /* iOS 安全區域適配 */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            /* iOS 慣性滾動 */
+            -webkit-overflow-scrolling: touch;
         }
 
         /* 頂部導航欄 */
@@ -532,6 +545,12 @@
             font-size: 1.1rem;
             transition: all 0.3s;
             text-transform: uppercase;
+            /* iOS 觸控優化 - 最小觸控目標 44x44px */
+            min-height: 48px;
+            min-width: 100px;
+            /* 避免 iOS 按鈕樣式 */
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .clear-btn {
@@ -1235,11 +1254,11 @@
             }
         }
 
-        /* 手機版 (768px以下) */
+        /* 手機版 (768px以下) - iPhone 優化 */
         @media (max-width: 768px) {
-            /* 手機版標識 - 用於測試 */
+            /* 手機版標識 */
             .navbar::before {
-                content: "📱 手機版 5×10";
+                content: "📱 iPhone 優化版";
                 position: absolute;
                 top: -20px;
                 left: 10px;
@@ -1252,12 +1271,12 @@
             }
             
             body {
-                font-size: 14px;
+                font-size: 15px; /* iOS 推薦最小 15px */
             }
             
             .game-container {
-                padding: 8px;
-                gap: 10px;
+                padding: 12px; /* 增加邊距避免觸碰邊緣 */
+                gap: 15px; /* 增加元素間距 */
                 max-width: 100vw;
                 overflow-x: hidden;
             }
@@ -1385,13 +1404,14 @@
             }
             
             .control-buttons {
-                gap: 8px;
-                margin: 10px 0;
+                gap: 12px; /* 增加按鈕間距避免誤觸 */
+                margin: 12px 0;
             }
             
             .control-btn {
-                padding: 12px 15px;
-                font-size: 0.9rem;
+                padding: 14px 18px; /* 增加內邊距提升觸控體驗 */
+                font-size: 1rem;
+                min-height: 48px; /* 確保符合 iOS 最小觸控標準 */
             }
             
             .analysis-panel {
@@ -1440,32 +1460,33 @@
             }
         }
 
-        /* iPhone Pro Max 和大屏手機優化 (414px-430px) */
+        /* iPhone 14/13/12 Pro 優化 (375px-430px) */
         @media (max-width: 430px) and (min-width: 375px) {
             body {
-                font-size: 15px;
+                font-size: 15px; /* iOS 最佳閱讀字體 */
             }
             
             .game-container {
-                padding: 10px;
-                gap: 12px;
+                padding: 12px; /* 舒適的邊距 */
+                gap: 14px; /* 適中的間距 */
             }
             
             .record-container {
                 min-height: 200px;
-                padding: 8px;
+                padding: 10px; /* 增加內邊距 */
             }
             
             .record-grid {
                 min-height: 180px;
-                gap: 2px;
-                padding: 4px;
+                gap: 3px; /* 稍微增加格子間距 */
+                padding: 5px;
             }
             
             .record-item {
-                font-size: 0.95rem;
-                min-height: 30px;
-                height: 30px;
+                font-size: 1rem; /* 提升可讀性 */
+                min-height: 32px;
+                height: 32px;
+                line-height: 1.4; /* 改善文字垂直對齊 */
             }
             
             .card-slot {
