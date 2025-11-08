@@ -74,14 +74,28 @@
                         </div>
                         
                         <div class="terms-buttons">
-                            <button class="terms-btn disagree" onclick="handleDisagree()">✗ 不同意</button>
-                            <button class="terms-btn agree" onclick="handleAgree()">✓ 我同意</button>
+                            <button class="terms-btn disagree" id="disagreeBtn">✗ 不同意</button>
+                            <button class="terms-btn agree" id="agreeBtn">✓ 我同意</button>
                         </div>
                     </div>
                 `;
                 
                 document.body.appendChild(modal);
                 document.body.classList.add('modal-open');
+                
+                // 綁定事件監聽器（避免CSP問題）
+                const agreeBtn = document.getElementById('agreeBtn');
+                const disagreeBtn = document.getElementById('disagreeBtn');
+                
+                if (agreeBtn) {
+                    agreeBtn.addEventListener('click', handleAgree);
+                    console.log('✅ 我同意按鈕事件已綁定');
+                }
+                
+                if (disagreeBtn) {
+                    disagreeBtn.addEventListener('click', handleDisagree);
+                    console.log('✅ 不同意按鈕事件已綁定');
+                }
                 
                 console.log('📋 服務條款彈窗已顯示');
             }
