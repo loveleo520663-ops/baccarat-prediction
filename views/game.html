@@ -15,8 +15,79 @@
     <title>百家樂預測系統 v2.4 - 遊戲大廳</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <!-- 自動處理服務條款同意 - 簡單修復 -->
-    <script src="/js/auto-agree.js"></script>
+    <!-- 緊急修復：立即處理服務條款 -->
+    <script>
+        // 緊急修復腳本 - 立即執行
+        (function() {
+            console.log('🚨 緊急修復執行中...');
+            
+            // 立即設置已同意標記
+            localStorage.setItem('termsAccepted', 'true');
+            localStorage.setItem('userAgreed', 'true');
+            sessionStorage.setItem('skipTerms', 'true');
+            
+            // 強制處理函數
+            function forceHandle() {
+                console.log('💥 強制處理服務條款');
+                
+                // 1. 隱藏所有可能的彈窗
+                const modals = document.querySelectorAll('.modal, .popup, .dialog, .terms-modal, [class*="modal"], [style*="position: fixed"]');
+                modals.forEach(el => {
+                    el.style.display = 'none !important';
+                    el.remove();
+                });
+                
+                // 2. 移除覆蓋層
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove('modal-open', 'no-scroll');
+                
+                // 3. 強制點擊所有包含「同意」的元素
+                document.querySelectorAll('*').forEach(el => {
+                    const text = el.textContent || '';
+                    if (text.includes('同意') || text.includes('我同意')) {
+                        console.log('🎯 強制點擊:', el);
+                        el.click();
+                        el.dispatchEvent(new Event('click', {bubbles: true}));
+                    }
+                });
+                
+                console.log('✅ 強制處理完成');
+            }
+            
+            // 立即執行
+            forceHandle();
+            
+            // 0.1秒後再執行一次
+            setTimeout(forceHandle, 100);
+            
+            // 0.5秒後再執行一次
+            setTimeout(forceHandle, 500);
+            
+            // 每秒檢查一次，持續5秒
+            let count = 0;
+            const interval = setInterval(() => {
+                count++;
+                forceHandle();
+                if (count >= 5) {
+                    clearInterval(interval);
+                    console.log('🛑 緊急修復完成');
+                }
+            }, 1000);
+            
+            // 全域點擊攔截
+            document.addEventListener('click', function(e) {
+                const text = e.target.textContent || '';
+                if (text.includes('同意')) {
+                    console.log('🔄 檢測到同意點擊，立即刷新');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    localStorage.setItem('termsAccepted', 'true');
+                    window.location.reload();
+                }
+            }, true);
+            
+        })();
+    </script>
     
     <!-- 備用圖標字體 -->
     <style>
