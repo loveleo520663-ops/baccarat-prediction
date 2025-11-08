@@ -43,31 +43,104 @@
         }
     }
     
-    // 處理服務條款彈窗
+    // 處理服務條款彈窗 - 增強版
     function handleTermsModal() {
-        // 查找可能的服務條款彈窗
-        const modals = document.querySelectorAll('.modal, .terms-modal, [class*="modal"]');
+        console.log('🔍 檢查服務條款彈窗...');
         
-        modals.forEach(modal => {
-            if (modal.style.display === 'block' || modal.classList.contains('show')) {
-                console.log('🔍 發現顯示中的彈窗:', modal);
+        // 1. 查找所有可能的彈窗元素
+        const modalSelectors = [
+            '.modal', '.terms-modal', '[class*="modal"]',
+            '.popup', '.dialog', '.overlay',
+            '[style*="z-index"]', '[style*="position: fixed"]',
+            'div[id*="modal"]', 'div[id*="popup"]', 'div[id*="dialog"]'
+        ];
+        
+        modalSelectors.forEach(selector => {
+            const modals = document.querySelectorAll(selector);
+            modals.forEach(modal => {
+                const isVisible = (
+                    modal.style.display === 'block' ||
+                    modal.classList.contains('show') ||
+                    modal.classList.contains('active') ||
+                    getComputedStyle(modal).display !== 'none'
+                );
                 
-                // 查找確認/同意按鈕
-                const confirmButtons = modal.querySelectorAll('button, .btn, [onclick*="confirm"], [onclick*="accept"]');
-                confirmButtons.forEach(btn => {
-                    if (btn.textContent.includes('同意') || btn.textContent.includes('確認') || btn.textContent.includes('繼續')) {
-                        console.log('🔘 自動點擊同意按鈕:', btn);
-                        btn.click();
-                    }
-                });
-                
-                // 如果沒找到按鈕，直接隱藏彈窗
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    modal.classList.remove('show');
-                }, 1000);
+                if (isVisible) {
+                    console.log('🔍 發現顯示中的彈窗:', modal);
+                    handleSingleModal(modal);
+                }
+            });
+        });
+        
+        // 2. 檢查整個頁面是否有阻塞元素
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(el => {
+            const text = el.textContent || '';
+            if (text.includes('我同意') || text.includes('服務條款') || text.includes('使用條款')) {
+                console.log('🔍 發現包含條款文字的元素:', el);
+                handleSingleModal(el.closest('div') || el);
             }
         });
+        
+        // 3. 強制檢查是否有按鈕包含"同意"文字
+        const allButtons = document.querySelectorAll('button, .btn, input[type="button"], input[type="submit"], a[role="button"]');
+        allButtons.forEach(btn => {
+            const text = btn.textContent || btn.value || '';
+            if (text.includes('同意') || text.includes('確認') || text.includes('繼續') || text.includes('OK')) {
+                console.log('🔘 發現可能的同意按鈕，自動點擊:', btn);
+                try {
+                    btn.click();
+                    btn.dispatchEvent(new Event('click', { bubbles: true }));
+                    btn.dispatchEvent(new Event('mousedown', { bubbles: true }));
+                    btn.dispatchEvent(new Event('mouseup', { bubbles: true }));
+                } catch (e) {
+                    console.log('按鈕點擊失敗:', e);
+                }
+            }
+        });
+    }
+    
+    function handleSingleModal(modal) {
+        if (!modal) return;
+        
+        console.log('🔧 處理單個彈窗:', modal);
+        
+        // 查找所有可能的按鈕
+        const buttonSelectors = [
+            'button', '.btn', '.button',
+            'input[type="button"]', 'input[type="submit"]',
+            'a[role="button"]', '[onclick]', '[data-action]'
+        ];
+        
+        buttonSelectors.forEach(selector => {
+            const buttons = modal.querySelectorAll(selector);
+            buttons.forEach(btn => {
+                const text = (btn.textContent || btn.value || '').toLowerCase();
+                if (text.includes('同意') || text.includes('確認') || text.includes('繼續') || 
+                    text.includes('accept') || text.includes('ok') || text.includes('yes')) {
+                    console.log('🔘 點擊同意按鈕:', btn);
+                    try {
+                        btn.click();
+                        // 多種方式觸發點擊事件
+                        btn.dispatchEvent(new Event('click', { bubbles: true }));
+                        btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    } catch (e) {
+                        console.log('按鈕點擊失敗:', e);
+                    }
+                }
+            });
+        });
+        
+        // 如果沒找到按鈕，嘗試隱藏彈窗
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.style.visibility = 'hidden';
+            modal.classList.remove('show', 'active', 'open');
+            modal.classList.add('hidden');
+            if (modal.parentElement) {
+                modal.parentElement.style.display = 'none';
+            }
+        }, 1000);
     }
     
     // 頁面載入超時處理
@@ -113,6 +186,33 @@
     
     observer.observe(document.body, { childList: true, subtree: true });
     
-    console.log('✅ 遊戲頁面修復腳本已啟動');
+    // 定期檢查彈窗 - 每秒檢查
+    setInterval(() => {
+        handleTermsModal();
+    }, 1000);
+    
+    // 監聽鍵盤事件 - Enter 鍵自動同意
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            console.log('🎯 檢測到 Enter/Space 鍵，檢查彈窗');
+            handleTermsModal();
+        }
+    });
+    
+    // 監聽點擊事件 - 任何地方點擊都檢查
+    document.addEventListener('click', (e) => {
+        console.log('🖱️ 檢測到點擊事件，檢查彈窗');
+        setTimeout(() => {
+            handleTermsModal();
+        }, 100);
+    });
+    
+    // 頁面聚焦時檢查
+    window.addEventListener('focus', () => {
+        console.log('🔍 頁面重新聚焦，檢查彈窗');
+        handleTermsModal();
+    });
+    
+    console.log('✅ 遊戲頁面修復腳本已啟動 - 增強版');
     
 })();
