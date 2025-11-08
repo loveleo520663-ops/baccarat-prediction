@@ -12,7 +12,6 @@ services:
     env: node
     runtime: node
     plan: free
-    region: singapore
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /
