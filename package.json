@@ -4,7 +4,7 @@
   "description": "專業百家樂預測系統",
   "main": "server/app.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node test-server-simple.js"
   },
   "dependencies": {
     "express": "^4.18.2",
