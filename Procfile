@@ -1,1 +1,1 @@
-web: node debug-server.js
+web: node memory-server.js
