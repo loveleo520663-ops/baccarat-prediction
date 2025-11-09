@@ -1,11 +1,5 @@
 version: "1"
 
-databases:
-  - name: baccarat-db
-    databaseName: baccarat
-    plan: free
-    region: singapore
-
 services:
   - type: web
     name: baccarat-prediction
@@ -22,6 +16,4 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: baccarat-db
-          property: connectionString
+        sync: false
