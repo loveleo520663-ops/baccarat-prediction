@@ -133,6 +133,15 @@ function showInstallButton() {
     return;
   }
   
+  // 優先使用頁面中的內嵌按鈕 (登入頁面)
+  const inlineBtn = document.getElementById('pwaInstallBtn');
+  if (inlineBtn) {
+    inlineBtn.style.display = 'flex';
+    inlineBtn.onclick = installPWA;
+    return;
+  }
+  
+  // 如果沒有內嵌按鈕,則創建浮動按鈕 (其他頁面)
   const installBtn = document.createElement('button');
   installBtn.className = 'pwa-install-btn';
   installBtn.innerHTML = '📱 安裝 APP';
@@ -147,15 +156,15 @@ function showInstallButton() {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: linear-gradient(135deg, #d4af37 0%, #f5e078 100%);
-      color: #1a1a1a;
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
       border: none;
       padding: 12px 24px;
       border-radius: 25px;
       font-weight: 700;
       font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
       z-index: 9999;
       transition: all 0.3s ease;
       animation: pulse 2s infinite;
@@ -163,7 +172,7 @@ function showInstallButton() {
     
     .pwa-install-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
     }
     
     @keyframes pulse {
@@ -205,9 +214,14 @@ async function installPWA() {
   if (outcome === 'accepted') {
     console.log('✅ 用戶接受安裝');
     // 移除安裝按鈕
-    const installBtn = document.querySelector('.pwa-install-btn');
-    if (installBtn) {
-      installBtn.remove();
+    const inlineBtn = document.getElementById('pwaInstallBtn');
+    const floatingBtn = document.querySelector('.pwa-install-btn');
+    
+    if (inlineBtn) {
+      inlineBtn.style.display = 'none';
+    }
+    if (floatingBtn) {
+      floatingBtn.remove();
     }
   }
   

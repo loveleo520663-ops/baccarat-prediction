@@ -204,6 +204,40 @@
             transform: translateY(0);
         }
 
+        /* PWA 安裝按鈕 - 內嵌樣式 */
+        .pwa-install-btn-inline {
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pwa-install-btn-inline:hover {
+            background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .pwa-install-btn-inline:active {
+            transform: translateY(0);
+        }
+
+        .pwa-install-btn-inline i {
+            font-size: 1.2rem;
+        }
+
         .register-notice {
             text-align: center;
             padding: 20px;
@@ -544,6 +578,12 @@
                 <button type="submit" class="auth-btn">
                     <i class="fas fa-sign-in-alt"></i>
                     登入系統
+                </button>
+                
+                <!-- PWA 安裝按鈕 -->
+                <button type="button" id="pwaInstallBtn" class="pwa-install-btn-inline" style="display: none;">
+                    <i class="fas fa-mobile-alt"></i>
+                    安裝到手機
                 </button>
             </form>
 
