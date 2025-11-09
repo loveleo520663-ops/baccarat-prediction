@@ -209,15 +209,15 @@
             width: 100%;
             padding: 15px;
             margin-top: 15px;
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            border: none;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -225,9 +225,10 @@
         }
 
         .pwa-install-btn-inline:hover {
-            background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+            background: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
         .pwa-install-btn-inline:active {
@@ -581,7 +582,7 @@
                 </button>
                 
                 <!-- PWA 安裝按鈕 -->
-                <button type="button" id="pwaInstallBtn" class="pwa-install-btn-inline" style="display: none;">
+                <button type="button" id="pwaInstallBtn" class="pwa-install-btn-inline">
                     <i class="fas fa-mobile-alt"></i>
                     安裝到手機
                 </button>

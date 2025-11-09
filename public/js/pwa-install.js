@@ -130,6 +130,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 function showInstallButton() {
   // 檢查是否已安裝
   if (checkIfInstalled()) {
+    hideInstallButton();
     return;
   }
   
@@ -156,15 +157,15 @@ function showInstallButton() {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
       color: white;
-      border: none;
+      border: 2px solid rgba(255, 255, 255, 0.2);
       padding: 12px 24px;
       border-radius: 25px;
       font-weight: 700;
       font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       z-index: 9999;
       transition: all 0.3s ease;
       animation: pulse 2s infinite;
@@ -172,7 +173,8 @@ function showInstallButton() {
     
     .pwa-install-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.3);
     }
     
     @keyframes pulse {
@@ -194,6 +196,19 @@ function showInstallButton() {
     }
   `;
   document.head.appendChild(style);
+}
+
+// 隱藏安裝按鈕
+function hideInstallButton() {
+  const inlineBtn = document.getElementById('pwaInstallBtn');
+  const floatingBtn = document.querySelector('.pwa-install-btn');
+  
+  if (inlineBtn) {
+    inlineBtn.style.display = 'none';
+  }
+  if (floatingBtn) {
+    floatingBtn.remove();
+  }
 }
 
 // 執行安裝
@@ -324,25 +339,24 @@ function showIOSInstallGuide() {
 window.addEventListener('appinstalled', () => {
   console.log('🎉 PWA 安裝成功!');
   isInstalled = true;
-  
-  // 移除安裝按鈕
-  const installBtn = document.querySelector('.pwa-install-btn');
-  if (installBtn) {
-    installBtn.remove();
-  }
+  hideInstallButton();
 });
 
-// 初始化檢查
-window.addEventListener('load', () => {
-  checkIfInstalled();
+// 初始化檢查 - 頁面載入時立即執行
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('🔍 檢查 PWA 安裝狀態...');
   
-  // 如果是 iOS 且未安裝,顯示提示
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !isInstalled) {
-    setTimeout(() => {
-      if (!checkIfInstalled()) {
-        showInstallButton();
-      }
-    }, 3000); // 3秒後顯示
+  // 立即檢查是否已安裝
+  if (checkIfInstalled()) {
+    hideInstallButton();
+  } else {
+    // 未安裝則確保按鈕可見
+    const inlineBtn = document.getElementById('pwaInstallBtn');
+    if (inlineBtn) {
+      inlineBtn.style.display = 'flex';
+      inlineBtn.onclick = installPWA;
+      console.log('✅ PWA 安裝按鈕已啟用');
+    }
   }
 });
 
