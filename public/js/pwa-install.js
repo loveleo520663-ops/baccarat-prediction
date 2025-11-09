@@ -248,19 +248,30 @@ function showIOSInstallGuide() {
   const guide = document.createElement('div');
   guide.className = 'ios-install-guide';
   guide.innerHTML = `
-    <div class="guide-overlay" onclick="this.parentElement.remove()"></div>
+    <div class="guide-overlay"></div>
     <div class="guide-content">
-      <h3>📱 安裝到主畫面</h3>
+      <h3>📱 IPHONE 安裝到主畫面</h3>
       <ol>
         <li>點擊下方的 <strong>分享</strong> 按鈕 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007AFF'%3E%3Cpath d='M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z'/%3E%3C/svg%3E" style="width:20px;height:20px;vertical-align:middle;"></li>
         <li>選擇 <strong>「加入主畫面」</strong></li>
         <li>點擊 <strong>「新增」</strong></li>
       </ol>
-      <button onclick="this.parentElement.parentElement.remove()">知道了</button>
+      <button class="close-guide-btn">知道了</button>
     </div>
   `;
   
   document.body.appendChild(guide);
+  
+  // 添加事件監聽器
+  const overlay = guide.querySelector('.guide-overlay');
+  const closeBtn = guide.querySelector('.close-guide-btn');
+  
+  const closeGuide = () => {
+    guide.remove();
+  };
+  
+  overlay.addEventListener('click', closeGuide);
+  closeBtn.addEventListener('click', closeGuide);
   
   // 添加樣式
   const style = document.createElement('style');
@@ -281,6 +292,7 @@ function showIOSInstallGuide() {
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.7);
+      cursor: pointer;
     }
     
     .guide-content {
@@ -292,6 +304,7 @@ function showIOSInstallGuide() {
       border-radius: 20px 20px 0 0;
       padding: 30px;
       animation: slideUpGuide 0.3s ease-out;
+      z-index: 10002;
     }
     
     @keyframes slideUpGuide {
@@ -307,6 +320,7 @@ function showIOSInstallGuide() {
       margin: 0 0 20px 0;
       color: #1a1a1a;
       font-size: 1.5rem;
+      font-weight: 700;
     }
     
     .guide-content ol {
@@ -314,6 +328,7 @@ function showIOSInstallGuide() {
       padding-left: 20px;
       color: #333;
       line-height: 2;
+      font-size: 1rem;
     }
     
     .guide-content li {
@@ -330,6 +345,16 @@ function showIOSInstallGuide() {
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .guide-content button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .guide-content button:active {
+      transform: translateY(0);
     }
   `;
   document.head.appendChild(style);
