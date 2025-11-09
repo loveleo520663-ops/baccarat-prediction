@@ -374,11 +374,14 @@
             gap: 20px;
             padding: 20px;
             max-width: 1400px;
+            width: 100%;
             margin: 0 auto;
             min-height: calc(100vh - 80px);
             /* iPhone 安全區域 - 只在左右加 */
             padding-left: max(20px, env(safe-area-inset-left));
             padding-right: max(20px, env(safe-area-inset-right));
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* 左側區域 - 牌色選擇器 */
@@ -1271,20 +1274,39 @@
                 z-index: 1000;
             }
             
-            body {
-                font-size: 15px; /* iOS 推薦最小 15px */
-            }
-            
-            .game-container {
-                padding: 12px; /* 增加邊距避免觸碰邊緣 */
-                gap: 15px; /* 增加元素間距 */
+            html, body {
+                width: 100%;
                 max-width: 100vw;
                 overflow-x: hidden;
             }
             
+            body {
+                font-size: 15px; /* iOS 推薦最小 15px */
+            }
+            
             .navbar {
-                padding: 8px 15px;
+                width: 100%;
+                padding: 8px 12px;
                 font-size: 0.9rem;
+                box-sizing: border-box;
+            }
+            
+            .game-container {
+                width: 100%;
+                max-width: 100vw;
+                padding: 10px;
+                gap: 12px;
+                box-sizing: border-box;
+                overflow-x: hidden;
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+            }
+            
+            .card-selector, .record-container, .analysis-panel {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
             }
             
             .nav-brand {
@@ -1463,13 +1485,32 @@
 
         /* iPhone 14/13/12 Pro 優化 (375px-430px) */
         @media (max-width: 430px) and (min-width: 375px) {
+            html, body {
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
+            
             body {
                 font-size: 15px; /* iOS 最佳閱讀字體 */
             }
             
             .game-container {
-                padding: 12px; /* 舒適的邊距 */
-                gap: 14px; /* 適中的間距 */
+                width: 100%;
+                max-width: 100vw;
+                padding: 10px;
+                gap: 12px;
+                box-sizing: border-box;
+                overflow-x: hidden;
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+            }
+            
+            .card-selector, .record-container, .analysis-panel {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
             }
             
             .record-container {
@@ -1553,13 +1594,32 @@
                 content: "📱 小屏版 5×8" !important;
             }
             
+            html, body {
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
+            
             body {
                 font-size: 13px;
             }
             
             .game-container {
-                padding: 6px;
-                gap: 8px;
+                width: 100%;
+                max-width: 100vw;
+                padding: 8px;
+                gap: 10px;
+                box-sizing: border-box;
+                overflow-x: hidden;
+                padding-left: max(8px, env(safe-area-inset-left));
+                padding-right: max(8px, env(safe-area-inset-right));
+            }
+            
+            .card-selector, .record-container, .analysis-panel {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
             }
             
             .record-container {
