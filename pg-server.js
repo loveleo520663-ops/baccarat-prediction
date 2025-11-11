@@ -298,11 +298,6 @@ app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, 
   }
 });
 
-// 健康檢查
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', database: 'postgresql' });
-});
-
 // 404 處理
 app.use((req, res) => {
   res.status(404).json({ error: '頁面不存在' });

@@ -9,7 +9,6 @@ services:
     region: singapore
     buildCommand: npm ci
     startCommand: node pg-server.js
-    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
