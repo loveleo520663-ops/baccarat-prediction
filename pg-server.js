@@ -326,6 +326,57 @@ app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, 
   }
 });
 
+// 緊急創建管理員 API (無需認證)
+app.post('/api/emergency/create-admin', async (req, res) => {
+  try {
+    const { secret } = req.body;
+    
+    // 簡單的安全檢查
+    if (secret !== 'emergency-admin-2024') {
+      return res.status(403).json({ error: '無效的緊急密鑰' });
+    }
+    
+    const db = database.getDB();
+    if (!db) {
+      return res.status(500).json({ error: '資料庫連接失敗' });
+    }
+    
+    // 檢查是否已有管理員
+    const adminCheck = await db.query('SELECT * FROM users WHERE username = $1', ['admin']);
+    
+    if (adminCheck.rows.length > 0) {
+      return res.json({ 
+        success: true, 
+        message: '管理員帳號已存在',
+        admin: { username: 'admin', exists: true }
+      });
+    }
+    
+    // 創建管理員
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const result = await db.query(
+      'INSERT INTO users (username, password, is_admin, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id, username',
+      ['admin', hashedPassword, 1]
+    );
+    
+    res.json({
+      success: true,
+      message: '緊急管理員帳號創建成功',
+      admin: {
+        id: result.rows[0].id,
+        username: result.rows[0].username,
+        password: 'admin123'
+      }
+    });
+  } catch (error) {
+    console.error('緊急創建管理員失敗:', error);
+    res.status(500).json({ 
+      error: '創建失敗', 
+      details: error.message 
+    });
+  }
+});
+
 // 404 處理
 app.use((req, res) => {
   res.status(404).json({ error: '頁面不存在' });
