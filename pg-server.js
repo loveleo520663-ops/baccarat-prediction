@@ -21,6 +21,9 @@ const initApp = async () => {
     const success = await database.createTables();
     if (success) {
       console.log('✅ 資料庫初始化完成');
+      
+      // 檢查並創建預設管理員
+      await createDefaultAdmin();
     } else {
       console.log('⚠️ 資料庫初始化失敗，但服務將繼續運行');
     }
@@ -28,6 +31,31 @@ const initApp = async () => {
     console.error('❌ 資料庫初始化錯誤:', error.message);
     console.log('⚠️ 警告: 資料庫連接失敗,但伺服器將繼續運行');
     console.log('💡 請檢查 DATABASE_URL 環境變數是否正確設定');
+  }
+};
+
+// 創建預設管理員帳號
+const createDefaultAdmin = async () => {
+  try {
+    const db = database.getDB();
+    if (!db) return;
+    
+    // 檢查是否已有管理員
+    const adminCheck = await db.query('SELECT * FROM users WHERE username = $1', ['admin']);
+    
+    if (adminCheck.rows.length === 0) {
+      // 創建預設管理員
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await db.query(
+        'INSERT INTO users (username, password, is_admin) VALUES ($1, $2, $3)',
+        ['admin', hashedPassword, 1]
+      );
+      console.log('✅ 已創建預設管理員帳號: admin / admin123');
+    } else {
+      console.log('✅ 管理員帳號已存在');
+    }
+  } catch (error) {
+    console.error('❌ 創建管理員帳號失敗:', error.message);
   }
 };
 
