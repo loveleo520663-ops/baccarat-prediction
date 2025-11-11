@@ -141,7 +141,7 @@ app.get('/prediction', (req, res) => {
 
 // API 路由
 // 登入
-app.post('/api/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -188,12 +188,12 @@ app.post('/api/login', async (req, res) => {
 });
 
 // 註冊功能已禁用
-app.post('/api/register', (req, res) => {
+app.post('/api/auth/register', (req, res) => {
   res.status(403).json({ error: '註冊功能已關閉，請聯絡管理員' });
 });
 
 // 獲取用戶資訊
-app.get('/api/me', authenticateToken, (req, res) => {
+app.get('/api/auth/me', authenticateToken, (req, res) => {
   const user = findUserById(req.user.userId);
   if (!user) {
     return res.status(404).json({ error: '用戶不存在' });
