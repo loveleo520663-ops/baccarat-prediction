@@ -178,7 +178,7 @@ class Auth {
 
     async login(username, password) {
         try {
-            const response = await api.request('/api/login', {
+            const response = await api.request('/api/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ username, password })
             });
@@ -199,7 +199,7 @@ class Auth {
 
     async register(userData) {
         try {
-            const response = await api.request('/api/register', {
+            const response = await api.request('/api/auth/register', {
                 method: 'POST',
                 body: JSON.stringify(userData)
             });
@@ -251,7 +251,7 @@ class Auth {
 
     async checkTokenValidity() {
         try {
-            await api.request('/api/me', {
+            await api.request('/api/auth/me', {
                 method: 'GET'
             });
             return true;
