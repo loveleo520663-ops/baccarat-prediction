@@ -18,10 +18,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'baccarat-pg-key-2024';
 const initApp = async () => {
   try {
     console.log('🔄 初始化資料庫...');
-    await database.createTables();
-    console.log('✅ 資料庫初始化完成');
+    const success = await database.createTables();
+    if (success) {
+      console.log('✅ 資料庫初始化完成');
+    } else {
+      console.log('⚠️ 資料庫初始化失敗，但服務將繼續運行');
+    }
   } catch (error) {
-    console.error('❌ 資料庫初始化失敗:', error);
+    console.error('❌ 資料庫初始化錯誤:', error.message);
     console.log('⚠️ 警告: 資料庫連接失敗,但伺服器將繼續運行');
     console.log('💡 請檢查 DATABASE_URL 環境變數是否正確設定');
   }
