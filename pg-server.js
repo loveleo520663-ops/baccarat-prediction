@@ -64,10 +64,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:", "*"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      imgSrc: ["'self'", "data:", "https:", "http:", "*"],
+      fontSrc: ["'self'", "https:", "http:", "*"],
+      connectSrc: ["'self'", "https:", "http:", "*"],
     },
   },
 }));
@@ -132,6 +133,10 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/prediction', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views/prediction.html'));
+});
+
+app.get('/game', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/prediction.html'));
 });
 
