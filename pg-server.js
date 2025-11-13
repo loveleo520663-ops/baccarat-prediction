@@ -383,6 +383,41 @@ app.post('/api/emergency/create-admin', async (req, res) => {
   }
 });
 
+// 健康檢查
+app.get('/health', async (req, res) => {
+  try {
+    const db = database.getDB();
+    if (!db) {
+      return res.status(500).json({ error: '資料庫未連接' });
+    }
+    
+    // 測試資料庫連線
+    await db.query('SELECT 1');
+    
+    // 檢查管理員帳號
+    const adminCheck = await db.query('SELECT id, username, is_admin FROM users WHERE username = $1', ['admin']);
+    
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      mode: 'postgresql',
+      database: 'connected',
+      adminExists: adminCheck.rows.length > 0,
+      adminInfo: adminCheck.rows.length > 0 ? adminCheck.rows[0] : null,
+      uptime: process.uptime(),
+      port: PORT,
+      env: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    console.error('健康檢查失敗:', error);
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      database: 'disconnected'
+    });
+  }
+});
+
 // 404 處理
 app.use((req, res) => {
   res.status(404).json({ error: '頁面不存在' });
