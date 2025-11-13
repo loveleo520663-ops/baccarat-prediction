@@ -637,7 +637,7 @@
 
             async login(username, password) {
                 try {
-                    const response = await fetch('/api/login', {
+                    const response = await fetch('/api/auth/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -654,7 +654,7 @@
                         this.user = data.user;
                         return { success: true, user: data.user };
                     } else {
-                        return { success: false, error: data.message || '登入失敗' };
+                        return { success: false, error: data.error || data.message || '登入失敗' };
                     }
                 } catch (error) {
                     console.error('登入錯誤:', error);
