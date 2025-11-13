@@ -1,1 +1,1 @@
-web: node pg-server.js
+web: node memory-server.js
