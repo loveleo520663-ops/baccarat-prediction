@@ -20,13 +20,17 @@ class ApiClient {
         }
 
         try {
+            console.log('🌐 API 請求:', { url, method: config.method || 'GET' });
             const response = await fetch(url, config);
+            console.log('📡 API 回應狀態:', response.status, response.statusText);
+            
             const data = await response.json();
+            console.log('📦 API 數據:', data);
 
             // 不管狀態碼如何，都返回數據讓調用者處理
             return data;
         } catch (error) {
-            console.error('API請求錯誤:', error);
+            console.error('❌ API請求錯誤:', error);
             throw error;
         }
     }
