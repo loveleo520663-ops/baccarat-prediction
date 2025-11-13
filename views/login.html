@@ -751,19 +751,24 @@
                 showLoading();
                 
                 try {
+                    console.log('🔍 開始登入...', { username, password: '***' });
                     const result = await auth.login(username, password);
+                    console.log('📥 登入結果:', result);
                     
                     if (result.success) {
+                        console.log('✅ 登入成功！');
                         showMessage('登入成功！正在進入遊戲...', 'success');
                         // 直接跳轉到遊戲頁面
                         setTimeout(() => {
                             window.location.href = '/game';
                         }, 1000);
                     } else {
-                        showMessage(result.error, 'error');
+                        console.error('❌ 登入失敗:', result.error);
+                        showMessage(result.error || '登入失敗', 'error');
                     }
                 } catch (error) {
-                    showMessage('登入過程中發生錯誤', 'error');
+                    console.error('❌ 登入異常:', error);
+                    showMessage(error.message || '登入過程中發生錯誤', 'error');
                 } finally {
                     hideLoading();
                 }
