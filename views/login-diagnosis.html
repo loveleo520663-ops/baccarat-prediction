@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入診斷測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-panel {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 0; }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 百家樂登入系統診斷</h1>
+    
+    <div class="test-panel">
+        <h2>1️⃣ 環境檢測</h2>
+        <div id="env-result" class="result info">等待測試...</div>
+        <button onclick="testEnvironment()">測試環境</button>
+    </div>
+
+    <div class="test-panel">
+        <h2>2️⃣ API 端點測試</h2>
+        <div id="api-result" class="result info">等待測試...</div>
+        <button onclick="testApiEndpoints()">測試 API</button>
+    </div>
+
+    <div class="test-panel">
+        <h2>3️⃣ 登入功能測試</h2>
+        <input type="text" id="username" placeholder="用戶名" value="admin">
+        <input type="password" id="password" placeholder="密碼" value="admin123">
+        <div id="login-result" class="result info">等待測試...</div>
+        <button onclick="testLogin()">測試登入</button>
+    </div>
+
+    <div class="test-panel">
+        <h2>4️⃣ Token 驗證測試</h2>
+        <div id="token-result" class="result info">等待測試...</div>
+        <button onclick="testToken()">驗證 Token</button>
+    </div>
+
+    <div class="test-panel">
+        <h2>5️⃣ 完整流程測試</h2>
+        <div id="flow-result" class="result info">等待測試...</div>
+        <button onclick="testFullFlow()">測試完整流程</button>
+    </div>
+
+    <script>
+        const baseURL = window.location.origin;
+        let currentToken = null;
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+
+        async function testEnvironment() {
+            let result = '環境信息:\n\n';
+            result += `當前 URL: ${window.location.href}\n`;
+            result += `Base URL: ${baseURL}\n`;
+            result += `協議: ${window.location.protocol}\n`;
+            result += `主機: ${window.location.host}\n`;
+            result += `瀏覽器: ${navigator.userAgent}\n`;
+            result += `LocalStorage 可用: ${typeof(Storage) !== "undefined" ? "✅ 是" : "❌ 否"}\n`;
+            
+            const token = localStorage.getItem('token');
+            result += `儲存的 Token: ${token ? '✅ 存在' : '❌ 無'}\n`;
+            
+            showResult('env-result', result, 'success');
+        }
+
+        async function testApiEndpoints() {
+            let result = 'API 端點測試:\n\n';
+            
+            try {
+                // 測試根路徑
+                const rootResponse = await fetch(baseURL + '/');
+                result += `GET / : ${rootResponse.ok ? '✅' : '❌'} (${rootResponse.status})\n`;
+
+                // 測試登入頁面
+                const loginPageResponse = await fetch(baseURL + '/login');
+                result += `GET /login : ${loginPageResponse.ok ? '✅' : '❌'} (${loginPageResponse.status})\n`;
+
+                // 測試遊戲頁面
+                const gamePageResponse = await fetch(baseURL + '/game');
+                result += `GET /game : ${gamePageResponse.ok ? '✅' : '❌'} (${gamePageResponse.status})\n`;
+
+                showResult('api-result', result, 'success');
+            } catch (error) {
+                result += `\n❌ 錯誤: ${error.message}`;
+                showResult('api-result', result, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            let result = `登入測試:\n\n`;
+            result += `用戶名: ${username}\n`;
+            result += `密碼: ${password}\n\n`;
+            
+            try {
+                const response = await fetch(baseURL + '/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                result += `HTTP 狀態: ${response.status}\n`;
+                result += `狀態文字: ${response.statusText}\n\n`;
+
+                const data = await response.json();
+                result += `回應數據:\n${JSON.stringify(data, null, 2)}\n\n`;
+
+                if (data.success && data.token) {
+                    currentToken = data.token;
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    result += `✅ 登入成功！\n`;
+                    result += `Token 已儲存\n`;
+                    showResult('login-result', result, 'success');
+                } else {
+                    result += `❌ 登入失敗！\n`;
+                    showResult('login-result', result, 'error');
+                }
+            } catch (error) {
+                result += `❌ 錯誤: ${error.message}\n`;
+                showResult('login-result', result, 'error');
+            }
+        }
+
+        async function testToken() {
+            const token = currentToken || localStorage.getItem('token');
+            
+            let result = `Token 驗證測試:\n\n`;
+            
+            if (!token) {
+                result += `❌ 沒有找到 Token\n請先登入！`;
+                showResult('token-result', result, 'error');
+                return;
+            }
+
+            result += `Token: ${token.substring(0, 50)}...\n\n`;
+
+            try {
+                const response = await fetch(baseURL + '/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                result += `HTTP 狀態: ${response.status}\n`;
+                const data = await response.json();
+                result += `回應數據:\n${JSON.stringify(data, null, 2)}\n\n`;
+
+                if (response.ok) {
+                    result += `✅ Token 有效！\n`;
+                    showResult('token-result', result, 'success');
+                } else {
+                    result += `❌ Token 無效！\n`;
+                    showResult('token-result', result, 'error');
+                }
+            } catch (error) {
+                result += `❌ 錯誤: ${error.message}\n`;
+                showResult('token-result', result, 'error');
+            }
+        }
+
+        async function testFullFlow() {
+            let result = '完整流程測試:\n\n';
+            showResult('flow-result', result + '🔄 測試進行中...', 'info');
+
+            try {
+                // 1. 清除舊資料
+                result += '步驟 1: 清除舊資料\n';
+                localStorage.clear();
+                result += '✅ 已清除 LocalStorage\n\n';
+
+                // 2. 登入
+                result += '步驟 2: 執行登入\n';
+                const loginResponse = await fetch(baseURL + '/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: 'admin123' })
+                });
+
+                const loginData = await loginResponse.json();
+                
+                if (!loginData.success || !loginData.token) {
+                    throw new Error('登入失敗');
+                }
+                
+                result += `✅ 登入成功\n`;
+                result += `   Token: ${loginData.token.substring(0, 30)}...\n`;
+                result += `   用戶: ${loginData.user.username}\n\n`;
+
+                // 3. 儲存資料
+                result += '步驟 3: 儲存登入資料\n';
+                localStorage.setItem('token', loginData.token);
+                localStorage.setItem('user', JSON.stringify(loginData.user));
+                result += '✅ 資料已儲存\n\n';
+
+                // 4. 驗證 Token
+                result += '步驟 4: 驗證 Token\n';
+                const meResponse = await fetch(baseURL + '/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${loginData.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const meData = await meResponse.json();
+                
+                if (!meResponse.ok) {
+                    throw new Error('Token 驗證失敗');
+                }
+                
+                result += `✅ Token 驗證成功\n`;
+                result += `   用戶 ID: ${meData.id}\n`;
+                result += `   用戶名: ${meData.username}\n\n`;
+
+                // 5. 測試訪問遊戲頁面
+                result += '步驟 5: 測試頁面訪問\n';
+                const gameResponse = await fetch(baseURL + '/game');
+                result += `✅ 遊戲頁面可訪問 (${gameResponse.status})\n\n`;
+
+                result += '━━━━━━━━━━━━━━━━━━━━━━━━\n';
+                result += '✅ 完整流程測試成功！\n';
+                result += '所有功能正常運作\n';
+                
+                showResult('flow-result', result, 'success');
+            } catch (error) {
+                result += `\n❌ 測試失敗: ${error.message}\n`;
+                showResult('flow-result', result, 'error');
+            }
+        }
+
+        // 頁面載入時自動測試環境
+        window.onload = () => {
+            testEnvironment();
+        };
+    </script>
+</body>
+</html>

@@ -103,6 +103,15 @@ app.get('/login', (req, res) => {
   }
 });
 
+app.get('/login-diagnosis', (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, 'views/login-diagnosis.html'));
+  } catch (error) {
+    console.error('❌ 診斷頁面錯誤:', error);
+    res.status(500).send(`診斷頁面錯誤: ${error.message}`);
+  }
+});
+
 app.get('/game', (req, res) => {
   try {
     res.sendFile(path.join(__dirname, 'views/game.html'));
