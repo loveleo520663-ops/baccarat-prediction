@@ -112,6 +112,15 @@ app.get('/login-diagnosis', (req, res) => {
   }
 });
 
+app.get('/login-debug', (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, 'views/login-debug.html'));
+  } catch (error) {
+    console.error('❌ 調試頁面錯誤:', error);
+    res.status(500).send(`調試頁面錯誤: ${error.message}`);
+  }
+});
+
 app.get('/game', (req, res) => {
   try {
     res.sendFile(path.join(__dirname, 'views/game.html'));

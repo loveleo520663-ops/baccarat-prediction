@@ -23,10 +23,7 @@ class ApiClient {
             const response = await fetch(url, config);
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.error || '請求失敗');
-            }
-
+            // 不管狀態碼如何，都返回數據讓調用者處理
             return data;
         } catch (error) {
             console.error('API請求錯誤:', error);

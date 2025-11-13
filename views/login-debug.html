@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入調試器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 { 
+            color: #333; 
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .log-area {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .log-info { background: #e3f2fd; color: #1565c0; }
+        .log-success { background: #e8f5e9; color: #2e7d32; }
+        .log-error { background: #ffebee; color: #c62828; }
+        .log-warning { background: #fff3e0; color: #ef6c00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 登入調試器</h1>
+        
+        <form id="debugLoginForm">
+            <div class="form-group">
+                <label for="username">用戶名</label>
+                <input type="text" id="username" value="admin" autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密碼</label>
+                <input type="password" id="password" value="admin123" autocomplete="current-password">
+            </div>
+            
+            <button type="submit">🚀 測試登入</button>
+        </form>
+        
+        <div class="log-area" id="logArea"></div>
+    </div>
+
+    <script>
+        const logArea = document.getElementById('logArea');
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logArea.insertBefore(entry, logArea.firstChild);
+        }
+
+        document.getElementById('debugLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            addLog('開始登入測試...', 'info');
+            addLog(`用戶名: ${username}`, 'info');
+            addLog(`密碼: ${'*'.repeat(password.length)}`, 'info');
+            
+            const loginData = { username, password };
+            addLog(`請求數據: ${JSON.stringify(loginData)}`, 'info');
+            
+            try {
+                const url = `${window.location.origin}/api/auth/login`;
+                addLog(`請求 URL: ${url}`, 'info');
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                addLog(`HTTP 狀態碼: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                
+                const contentType = response.headers.get('content-type');
+                addLog(`Content-Type: ${contentType}`, 'info');
+                
+                let data;
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                    addLog(`回應數據: ${JSON.stringify(data, null, 2)}`, 
+                        response.ok ? 'success' : 'error');
+                } else {
+                    const text = await response.text();
+                    addLog(`回應文本: ${text}`, 'error');
+                    data = { error: '伺服器返回非JSON格式' };
+                }
+                
+                if (response.ok && data.success) {
+                    addLog('✅ 登入成功！', 'success');
+                    addLog(`Token: ${data.token.substring(0, 50)}...`, 'success');
+                    addLog(`用戶: ${JSON.stringify(data.user)}`, 'success');
+                    
+                    // 儲存到 LocalStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    addLog('✅ 數據已儲存到 LocalStorage', 'success');
+                    
+                    // 測試 Token
+                    setTimeout(async () => {
+                        addLog('開始測試 Token 驗證...', 'info');
+                        try {
+                            const meResponse = await fetch(`${window.location.origin}/api/auth/me`, {
+                                method: 'GET',
+                                headers: {
+                                    'Authorization': `Bearer ${data.token}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            
+                            const meData = await meResponse.json();
+                            addLog(`Token 驗證: ${meResponse.ok ? '✅ 成功' : '❌ 失敗'}`, 
+                                meResponse.ok ? 'success' : 'error');
+                            addLog(`驗證數據: ${JSON.stringify(meData)}`, 
+                                meResponse.ok ? 'success' : 'error');
+                        } catch (err) {
+                            addLog(`❌ Token 驗證錯誤: ${err.message}`, 'error');
+                        }
+                    }, 1000);
+                    
+                } else {
+                    addLog(`❌ 登入失敗: ${data.error || '未知錯誤'}`, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ 請求錯誤: ${error.message}`, 'error');
+                addLog(`錯誤堆疊: ${error.stack}`, 'error');
+            }
+        });
+        
+        // 頁面載入時顯示環境信息
+        window.addEventListener('load', () => {
+            addLog('=== 環境信息 ===', 'info');
+            addLog(`當前 URL: ${window.location.href}`, 'info');
+            addLog(`Origin: ${window.location.origin}`, 'info');
+            addLog(`LocalStorage 可用: ${typeof(Storage) !== "undefined" ? '✅' : '❌'}`, 'info');
+            
+            const storedToken = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('user');
+            addLog(`已儲存 Token: ${storedToken ? '✅ 是' : '❌ 否'}`, 'info');
+            addLog(`已儲存 User: ${storedUser ? '✅ 是' : '❌ 否'}`, 'info');
+            addLog('=== 準備就緒 ===', 'success');
+        });
+    </script>
+</body>
+</html>
