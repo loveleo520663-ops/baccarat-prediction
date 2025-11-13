@@ -137,7 +137,7 @@ app.get('/prediction', (req, res) => {
 });
 
 app.get('/game', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views/prediction.html'));
+  res.sendFile(path.join(__dirname, 'views/game.html'));
 });
 
 // ========== API 路由 ==========
