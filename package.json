@@ -2,10 +2,10 @@
   "name": "baccarat-prediction-system",
   "version": "1.0.0",
   "description": "專業百家樂預測系統",
-  "main": "memory-server.js",
+  "main": "pg-server.js",
   "scripts": {
-    "start": "node memory-server.js",
-    "dev": "nodemon memory-server.js"
+    "start": "node pg-server.js",
+    "dev": "nodemon pg-server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
